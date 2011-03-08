@@ -16,15 +16,19 @@ debug:
 clean:
 	rm -f *.zip *.deb
 
-deb:
+bdist:
+	python setup.py bdist
+	mv dist/*gz ./
+	rm -rf build dist
+
+deb: bdist
 	rm -rf *.deb debian/usr
 	cat debian/DEBIAN/control.in | sed -e "s/VERSION/${VERSION}/g" > debian/DEBIAN/control
-	mkdir -p debian/usr
-	cp -R bin share debian/usr/
-	cp -R doc debian/usr/share/
-	sudo chown -R root:root debian/usr
-	dpkg -b debian ${DEB}
-	sudo rm -rf debian/usr debian/DEBIAN/control
+	tar xfz tmradio-client-*.tar.gz -C debian
+	mv debian/usr/local/* debian/usr/
+	rm -rf debian/usr/local
+	fakeroot dpkg -b debian ${DEB}
+	rm -rf debian/usr debian/DEBIAN/control
 
 zip:
 	zip -r9 ${ZIP} bin doc share Makefile CHANGES COPYING README.md
@@ -38,8 +42,3 @@ install:
 
 release:
 	make -C ../.. update-packages
-
-bdist:
-	python setup.py bdist
-	mv dist/*gz ./
-	rm -rf build dist
