@@ -31,5 +31,6 @@ setup(
     url = 'http://tmradio.net/',
     scripts = [ 'bin/tmradio-client' ],
     data_files = data_files,
-    license = 'Gnu GPL'
+    license = 'Gnu GPL',
+    requires = ['feedparser', 'gst', 'gtk', 'json', 'pygst', 'pygtk', 'xmpp', 'yaml' ]
 )
