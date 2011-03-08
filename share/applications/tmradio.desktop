@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Name=tmradio.net client
+Name[ru]=Клиент tmradio.net
+Comment=A Twitter client
+Comment[ru]=Клиент для Тоже мне радио
+Exec=tmradio-client
+Icon=tmradio-client
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=GTK;Network;

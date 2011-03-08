@@ -1,0 +1,77 @@
+Version 0.12
+
+- Message log can no longer be edited manually.
+- The list of nicknames is now sorted.
+- Nicknames in the Twitter tab can be clicked.
+- Tags are now changed more efficiently.
+- Trailing empty spaces are removed from chat messages.
+- Added a tab with podcasts.
+- The voting buttons can no longer be unpressed.
+- Added a "report bugs" menu item.
+- Fixed some debug messages.
+- Quit when the main window is closed.
+- New icons.
+- Rearranged source files.
+- Notifications are only shown when the window is not visible.
+- Chat nickname is reported to the streaming server.
+
+
+Version 0.11
+
+- Using a TextView for chat log and twitter, text can now be copied.
+
+
+Version 0.10
+
+- The news tab shows twit dates and times.
+- Added a 60s delay between twitter updated.
+- Fixed problems with Twitter updates (records are now stored locally in case
+  they disappear from the ATOM feed, which happens often).
+- Fixed the problem with lots of news expanding the application window.
+- Added some basic markup for the chat window.
+- Long chat messages no longer hide behind the scroll bar.
+- Links in chat can now be opened using a pop-up menu.
+- Chat row heights are updated when the window is resized.
+- Added notifications when track changes.
+- The progress bar is available from the start.
+- Chat history is now correctly timestamped.
+- The chat log logic is moved to a separate class, MessageView.
+
+
+Version 0.9
+
+- Some controls are disabled when the bot is offline.
+- Track position is displayed with a progress bar.
+- Depends to python-dnspython.
+
+
+Version 0.8
+
+- Better handling of network failures, automatic reconnecting.
+- Added support for proxies (the http_proxy envar).
+- Fixed hanging after ^C.
+
+
+Version 0.7
+
+- Fixed an error when trying to join the chat room while not connected.
+- Preferences window pops up on startup if jid/password are not set.
+- If jabber credentials are wrong, the preferences window pops up.
+- Fixed the rocks/sucks buttons being stuck.
+- Fixed station web site not opening.
+
+
+Version 0.6:
+
+- Track info editor introduced.
+- Fixed high CPU usage.
+- Communication between GUI and the jabber client serialized with two queues.
+- Added optional support for threading (--threaded), for testing purposes.
+- Fixed removing track labels.
+- The bot is automatically added to the roster if not there.
+- Dynamic control over administrative functions (only enabled if available).
+- Fixed sensitivity problems for sucks/rocks buttons.
+- The chat tab shows nicknames of users currently in the chat room.
+- Added some basic twitter support.
+- The number of current listeners is displayed in the application title and in
+  the indicator icon tooltip.
