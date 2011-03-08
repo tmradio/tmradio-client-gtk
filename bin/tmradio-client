@@ -1335,13 +1335,13 @@ class MainWindow(BaseWindow):
         gtk.main_quit()
 
     def on_menu_about_activate(self, *args):
-        webbrowser.open('http://code.google.com/p/umonkey-tools/wiki/tmradio')
+        webbrowser.open('https://github.com/tmradio/tmradio-client-gtk')
 
     def on_menu_website_activate(self, *args):
         webbrowser.open('http://www.tmradio.net/')
 
     def on_menu_bugs_activate(self, *args):
-        webbrowser.open('http://code.google.com/p/umonkey-tools/issues/list')
+        webbrowser.open('https://github.com/tmradio/tmradio-client-gtk/issues')
 
     def on_chat_entered(self):
         self.builder.get_object('chatmsg').grab_focus()
