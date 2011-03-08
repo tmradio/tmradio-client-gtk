@@ -1266,8 +1266,11 @@ class MainWindow(BaseWindow):
     def on_chatmsg_activate(self, field):
         if self.jabber:
             text = field.get_text()
+            chat = not text.startswith('/')
+            if not chat:
+                text = text[1:]
             field.set_text('')
-            self.jabber.post_message(text, chat=True)
+            self.jabber.post_message(text, chat=chat)
 
     def on_update_clicked(self, button):
         if not self.jabber:
