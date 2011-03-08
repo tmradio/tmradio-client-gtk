@@ -2,7 +2,17 @@ VERSION=0.12
 DEB=tmradio-client-gtk-${VERSION}.deb
 ZIP=tmradio-client-gtk-${VERSION}.zip
 
-all: zip
+all: help
+
+help:
+	@echo "bdist    build a Python egg"
+	@echo "clean    delete temporary files"
+	@echo "config   edit your client's config"
+	@echo "deb      build a Debian package"
+	@echo "debug    run the client in debug mode (lots of jabber output)"
+	@echo "install  install the client (using setup.py)"
+	@echo "test     run the client in normal mode"
+	@echo "zip      build a source ZIP archive"
 
 config:
 	editor $(HOME)/.tmradio-client.yaml
@@ -14,7 +24,7 @@ debug:
 	./tmradio-client --debug
 
 clean:
-	rm -f *.zip *.deb
+	rm -f *.zip *.deb *.tar.gz
 
 bdist:
 	python setup.py bdist
@@ -39,6 +49,3 @@ upload-deb: deb zip
 
 install:
 	sudo python setup.py install
-
-release:
-	make -C ../.. update-packages
