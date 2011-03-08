@@ -5,23 +5,16 @@ import glob
 from distutils.core import setup
 
 # Files to install:
-inst_share_ui = glob.glob('share/tmradio-client/*.ui')
-inst_desktop = [ 'share/applications/tmradio.desktop' ]
-
-inst_icons = [ 'share/icons/hicolor/48x48/apps/tmradio-client.png' ]
-inst_icons_256 = [ 'share/icons/hicolor/256x256/apps/tmradio-client.png' ]
-inst_icons_72 = [ 'share/icons/hicolor/72x72/apps/tmradio-client.png' ]
-inst_icons_64 = [ 'share/icons/hicolor/64x64/apps/tmradio-client.png' ]
-inst_icons_48 = [ 'share/icons/hicolor/48x48/apps/tmradio-client.png' ]
-inst_icons_32 = [ 'share/icons/hicolor/32x32/apps/tmradio-client.png' ]
-inst_icons_24 = [ 'share/icons/hicolor/24x24/apps/tmradio-client.png' ]
-inst_icons_16 = [ 'share/icons/hicolor/16x16/apps/tmradio-client.png' ]
-
 data_files = [
-    ('share/tmradio-client', inst_share_ui),
-    ('share/icons/hicolor/48x48/apps', inst_icons ),
-    ('share/icons/hicolor/32x32/apps', inst_icons_32 ),
-    ('share/icons/hicolor/16x16/apps', inst_icons_16 ),
+    ('share/applications', ['data/tmradio.desktop']),
+    ('share/icons/hicolor/16x16/apps', ['data/icon-16.png']),
+    ('share/icons/hicolor/24x24/apps', ['data/icon-24.png']),
+    ('share/icons/hicolor/256x256/apps', ['data/icon-256.png']),
+    ('share/icons/hicolor/32x32/apps', ['data/icon-32.png']),
+    ('share/icons/hicolor/48x48/apps', ['data/icon-48.png']),
+    ('share/icons/hicolor/64x64/apps', ['data/icon-64.png']),
+    ('share/icons/hicolor/72x72/apps', ['data/icon-72.png']),
+    ('share/tmradio-client', glob.glob('data/*.ui')),
 ]
 
 packages = []
