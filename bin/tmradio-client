@@ -1049,7 +1049,7 @@ class MainWindow(BaseWindow):
             for item in items:
                 author = item['author'].split(' ')[0]
                 tstamp = datetime.datetime.strptime(item['updated'], '%Y-%m-%dT%H:%M:%SZ')
-                self.twit_tab.add_message(time=tstamp, nick=author, message=item['title'], nicklink='http://twitter.com/' + author)
+                self.twit_tab.add_message(time=tstamp, nick=author, message=item['title'], nicklink=item['link'])
 
     def _update_podcast(self):
         items = self.podcast.get_records()
