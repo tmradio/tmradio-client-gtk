@@ -14,6 +14,14 @@ Version 0.12
 - Rearranged source files.
 - Notifications are only shown when the window is not visible.
 - Chat nickname is reported to the streaming server.
+- Twitter messages link to message pages, not user profiles.
+- Chat messages prefixed with a slash are sent to the bot (e.g., /skip).
+- Sudo is no longer needed to build a deb package.
+- Settings are stored in ~/.tmradio-client.yaml, not GConf (which blocked
+  porting to Windows).
+- The jabber password is now stored obfuscated with base64.
+- Removed some unused code.
+- Moved the source code to GitHub, changed links in the Help menu.
 
 
 Version 0.11

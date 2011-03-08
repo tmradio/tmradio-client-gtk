@@ -8,6 +8,7 @@
 import warnings
 warnings.filterwarnings("ignore")
 
+import base64
 import cgi
 import datetime
 import feedparser
@@ -97,10 +98,10 @@ class YamlConfig:
         self.data['jabber_id'] = value
 
     def get_jabber_password(self):
-        return self.get('jabber_password')
+        return base64.b64decode(self.get('jabber_password'))
 
     def set_jabber_password(self, value):
-        self.data['jabber_password'] = value
+        self.data['jabber_password'] = base64.b64encode(value)
 
     def get_debug(self):
         return self.get('debug', '--debug' in sys.argv)
