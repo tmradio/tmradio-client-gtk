@@ -7,6 +7,7 @@ from distutils.core import setup
 # Files to install:
 data_files = [
     ('share/applications', ['data/tmradio.desktop']),
+    ('share/doc/tmradio/client', ['CHANGES', 'COPYING', 'README.md']),
     ('share/icons/hicolor/16x16/apps', ['data/icon-16.png']),
     ('share/icons/hicolor/24x24/apps', ['data/icon-24.png']),
     ('share/icons/hicolor/256x256/apps', ['data/icon-256.png']),
@@ -29,5 +30,6 @@ setup(
     author_email = 'hex@umonkey.net',
     url = 'http://tmradio.net/',
     scripts = [ 'bin/tmradio-client' ],
-    data_files = data_files
+    data_files = data_files,
+    license = 'Gnu GPL'
 )
