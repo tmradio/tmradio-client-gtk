@@ -1232,7 +1232,7 @@ class MainWindow(BaseWindow):
         gtk.main_quit()
 
     def on_menu_about_activate(self, *args):
-        webbrowser.open('https://github.com/tmradio/tmradio-client-gtk')
+        webbrowser.open('http://app.tmradio.net/')
 
     def on_menu_website_activate(self, *args):
         webbrowser.open('http://www.tmradio.net/')
