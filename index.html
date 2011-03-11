@@ -6,9 +6,10 @@
     <style type="text/css">
       body { background-color: white; color: #333; font: normal 10pt/14pt Ubuntu, sans-serif; margin: 20px 0; }
       a { color: #008; }
-      h1 { font: normal 20pt/24pt sans-serif; margin: 0 0 1em; }
-      h2 { font: normal 16pt/20pt sans-serif; margin: 0 0 .25em; text-decoration: none; }
-      hr { margin-top: 4em; }
+      h1 { font: normal 20pt/20pt sans-serif; margin: 0 0 .75em; }
+      h2 { font: normal 14pt/14pt sans-serif; margin: 0 0 .25em; text-decoration: none; }
+      hr { margin-top: 2em; }
+      img { border: none; }
       #wrapper { width: 960px; margin: 0 auto; }
       #content { position: relative; }
       #media, #text { position: absolute; top: 0; padding-bottom: 20px; }
@@ -16,8 +17,9 @@
       #text { left: 540px; }
       #text ul { margin-left: 0; padding-left: 0; }
       #text li { margin-left: 2em; padding-left: 0; }
-      #dlinks { margin-top: 2em; }
-      #donate { display: block; font: normal 10pt; margin: -16px 0 0 350px; }
+      #shots { margin: 10px 0 0; padding: 0; list-style-type: none; }
+      #shots li { margin: 0 10px 0; display: inline; }
+      #shots img { width: 100px; height: 100px; }
     </style>
   </head>
   <body>
@@ -27,7 +29,13 @@
       <div id="content">
         <div id="media">
           <iframe src="http://player.vimeo.com/video/20916539?byline=0&amp;portrait=0" width="500" height="281" frameborder="0"></iframe>
-          <p><img src="screenshot-500.png" alt="screenshot"/></p>
+
+          <ul id="shots">
+            <li><a target="_blank" href="screenshots/tab1.png" title="Основная вкладка"><img src="screenshots/tab1-sq.png" alt="screenshot"/></a></li>
+            <li><a target="_blank" href="screenshots/tab2.png" title="Вкладка с новостями"><img src="screenshots/tab2-sq.png" alt="screenshot"/></a></li>
+            <li><a target="_blank" href="screenshots/tab3.png" title="Вкладка с подкастами"><img src="screenshots/tab3-sq.png" alt="screenshot"/></a></li>
+            <li><a target="_blank" href="screenshots/tab4.png" title="Вкладка с настройками"><img src="screenshots/tab3-sq.png" alt="screenshot"/></a></li>
+          </ul>
         </div>
 
         <div id="text">
