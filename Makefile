@@ -19,13 +19,13 @@ config:
 	editor $(HOME)/.tmradio-client.yaml
 
 test:
-	PYTHONPATH=src ./bin/tmradio-client
+	PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 ./bin/tmradio-client
 
 debug:
-	PYTHONPATH=src ./bin/tmradio-client --debug
+	PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 ./bin/tmradio-client --debug
 
 python:
-	PYTHONPATH=src python
+	PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 python
 
 clean:
 	rm -f *.zip *.deb *.tar.gz
