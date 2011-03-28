@@ -892,8 +892,7 @@ class MainWindow(BaseWindow):
         self._update_progress_bar()
         if not USE_THREADING:
             self.jabber.process_queue()
-        if self.player:
-            self.player.check_restart()
+        self.player.on_idle()
         self._update_twitter()
         self._update_podcast()
         return True
@@ -1086,6 +1085,8 @@ class MainWindow(BaseWindow):
             rocks.set_sensitive(False)
             sucks.set_active(False)
             sucks.set_sensitive(False)
+
+        self.builder.get_object('play').set_sensitive(self.player.can_play())
 
     def on_chatmsg_activate(self, field):
         if self.jabber:

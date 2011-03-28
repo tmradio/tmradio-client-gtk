@@ -1,10 +1,32 @@
 # vim: set fileencoding=utf-8:
 
-import pygst
-pygst.require('0.10')
-import gst
+try:
+    import pygst
+    pygst.require('0.10')
+    import gst
+    HAVE_GSTREAMER=True
+except:
+    HAVE_GSTREAMER=False
 
-class GstClient:
+
+class DummyClient:
+    def on_idle(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def play(self, url, volume):
+        pass
+
+    def set_volume(self, volume):
+        pass
+
+    def can_play(self):
+        return False
+
+
+class GstClient(DummyClient):
     """Interaction with Gstreamer."""
 
     def __init__(self, on_track_change=None, config=None):
@@ -20,7 +42,7 @@ class GstClient:
         self.on_track_change = on_track_change
         self.restart_ts = None
 
-    def check_restart(self):
+    def on_idle(self):
         if self.restart_ts and time.time() >= self.restart_ts:
             self.restart_ts = time.time() + 5 # prevent spinning
             self.play(self.stream_uri)
@@ -75,6 +97,11 @@ class GstClient:
         if self.volume:
             self.volume.set_property('volume', level)
 
+    def can_play(self):
+        return True
+
 
 def Open(on_track_change=None, config=None):
-    return GstClient(on_track_change, config)
+    if HAVE_GSTREAMER:
+        return GstClient(on_track_change, config)
+    return DummyClient()
