@@ -1,4 +1,5 @@
-*.pyc
-*.zip
 *.deb
 *.gz
+*.log
+*.pyc
+*.zip

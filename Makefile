@@ -19,10 +19,10 @@ config:
 	editor $(HOME)/.tmradio-client.yaml
 
 test:
-	./bin/tmradio-client
+	./bin/tmradio-client 2>&1 | tee client.log
 
 debug:
-	./bin/tmradio-client --debug
+	./bin/tmradio-client --debug 2>&1 | tee client.log
 
 clean:
 	rm -f *.zip *.deb *.tar.gz src/tmradio/*.pyc
