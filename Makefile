@@ -25,7 +25,7 @@ debug:
 	./bin/tmradio-client --debug
 
 clean:
-	rm -f *.zip *.deb *.tar.gz
+	rm -f *.zip *.deb *.tar.gz src/tmradio/*.pyc
 
 bdist:
 	python setup.py bdist
