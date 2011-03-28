@@ -29,12 +29,13 @@ class DummyClient:
 class GstClient(DummyClient):
     """Interaction with Gstreamer."""
 
-    def __init__(self, on_track_change=None, config=None):
+    def __init__(self, on_track_change=None, config=None, version='unknown'):
         """Initializes the player.
 
         on_track_change is called when stream metadata updates and receives the
         new stream title as the only parameter.
         """
+        self.version = version
         self.config = config
         self.pipeline = None
         self.stream_uri = None
@@ -68,7 +69,7 @@ class GstClient(DummyClient):
 
     def get_pipeline(self, uri):
         pl = gst.Pipeline('pipeline')
-        agent = 'tmradio-client/%s (%s)' % (VERSION, self.config.get_jabber_chat_nick(guess=True))
+        agent = 'tmradio-client/%s (%s)' % (self.version, self.config.get_jabber_chat_nick(guess=True))
         tmp = gst.parse_launch('souphttpsrc location="%s" user-agent="%s" ! decodebin ! volume ! autoaudiosink' % (uri, agent))
         self.volume = list(tmp.elements())[1]
         pl.add(tmp)
@@ -101,7 +102,7 @@ class GstClient(DummyClient):
         return True
 
 
-def Open(on_track_change=None, config=None):
+def Open(on_track_change=None, config=None, version=None):
     if HAVE_GSTREAMER:
-        return GstClient(on_track_change, config)
+        return GstClient(on_track_change, config=config, version=version)
     return DummyClient()

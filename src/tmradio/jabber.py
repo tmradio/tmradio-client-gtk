@@ -26,7 +26,8 @@ class Jabber:
     PING_FREQUENCY = 60 # seconds
     PING_TIMEOUT = 5 # seconds
 
-    def __init__(self, gui, use_threading=False):
+    def __init__(self, gui, use_threading=False, version='unknown'):
+        self.version = version
         self.gui = gui
         self.config = gui.config
         self.jid = None
@@ -132,7 +133,7 @@ class Jabber:
                 know = True
         if not know:
             self._log('need to make friends with %s' % self.bot_jid)
-            msg = xmpp.Presence(to=self.bot_jid, typ='subscribe', status=u'Hello, I\'m using tmradio-client/' + VERSION)
+            msg = xmpp.Presence(to=self.bot_jid, typ='subscribe', status=u'Hello, I\'m using tmradio-client/' + self.version)
             self.cli.send(msg)
 
     def _join_chat_room(self, suffix=None):
@@ -343,5 +344,5 @@ class Jabber:
         self.post_replies([('left', ), ('disconnected', )])
         self.reconnect_time = int(time.time()) + 5
 
-def Open(gui, use_threading=False):
-    return Jabber(gui, use_threading)
+def Open(gui, use_threading=False, version=None):
+    return Jabber(gui, use_threading, version=version)
