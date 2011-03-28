@@ -4,10 +4,6 @@
 # TODO:
 # http://therning.org/magnus/archives/57 (install schemas)
 
-# Suppress hashlib warnings.
-import warnings
-warnings.filterwarnings("ignore")
-
 import datetime
 import feedparser
 import os

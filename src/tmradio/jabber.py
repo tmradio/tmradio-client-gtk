@@ -1,5 +1,9 @@
 # vim: set fileencoding=utf-8:
 
+# Suppress hashlib warnings.
+import warnings
+warnings.filterwarnings("ignore")
+
 import datetime
 import json
 import os
