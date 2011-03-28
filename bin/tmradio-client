@@ -32,6 +32,11 @@ try:
 except:
     HAVE_NOTIFY = False
 
+# This lets you run the client from the source tree.
+src_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src')
+if os.path.exists(src_dir):
+    sys.path.insert(0, src_dir)
+
 import tmradio.audio
 import tmradio.config
 import tmradio.jabber
