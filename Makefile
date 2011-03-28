@@ -25,7 +25,7 @@ debug:
 	./bin/tmradio-client --debug 2>&1 | tee client.log
 
 clean:
-	rm -f *.zip *.deb *.tar.gz src/tmradio/*.pyc
+	rm -f *.zip *.deb *.tar.gz src/tmradio/*.pyc src/tmradio/ui/*.pyc
 
 bdist:
 	python setup.py bdist
@@ -41,8 +41,8 @@ deb: bdist
 	fakeroot dpkg -b debian ${DEB}
 	rm -rf debian/usr debian/DEBIAN/control
 
-zip:
-	zip -r9 ${ZIP} bin data Makefile CHANGES COPYING README.md setup.py
+zip: clean
+	zip -r9 ${ZIP} bin data src Makefile CHANGES COPYING README.md setup.py
 
 upload-deb: deb zip
 	-googlecode_upload.py -s "Version ${VERSION} of the GTK+ client for tmradio.net" -p umonkey-tools -l tmradio ${DEB}
