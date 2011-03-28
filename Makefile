@@ -19,7 +19,7 @@ config:
 	editor $(HOME)/.tmradio-client.yaml
 
 test:
-	./bin/tmradio-client
+	PYTHONPATH=src ./bin/tmradio-client
 
 debug:
 	PYTHONPATH=src ./bin/tmradio-client --debug
