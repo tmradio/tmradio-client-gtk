@@ -168,7 +168,7 @@ class Jabber:
         if msg.getType() == 'groupchat':
             parts = unicode(msg.getFrom()).split('/')
             if len(parts) < 2:
-                print msg
+                pass # print msg
             else:
                 nick = unicode(msg.getFrom()).split('/')[1]
                 self.post_replies([
@@ -192,7 +192,7 @@ class Jabber:
                     replies.append(('set', key, value))
                 self.post_replies(replies)
                 return
-        self._log('unhandled message: %s' % msg.getBody())
+        # self._log('unhandled message: %s' % msg.getBody())
 
     def _get_msg_ts(self, msg):
         delay = msg.getTag('delay')
@@ -252,7 +252,6 @@ class Jabber:
                 self.post_message('dump ' + track_id)
                 self.last_track_id = track_id
         else:
-            print msg
             self._log('bot status not understood: %s' % msg.getStatus())
 
     def _check_nickname_taken(self, sender, msg):
@@ -334,7 +333,7 @@ class Jabber:
             self._log('sent to bot: %s' % text)
 
     def _log(self, message):
-        print >>sys.stderr, 'jabber:', message
+        pass # print >>sys.stderr, 'jabber:', message # FIXME: use a real log, this breaks Windows console (CP-866).
 
     def _on_disconnected(self):
         self._log('disconnected from the server, reconnecting in 5 seconds.')

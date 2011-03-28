@@ -2,6 +2,7 @@ Version 0.13
 
 - Split the code to separate modules.
 - GStreamer is optional; no sound if not available (chat works).
+- Disabled most console logging.
 
 
 Version 0.12
