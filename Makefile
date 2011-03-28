@@ -22,7 +22,10 @@ test:
 	./bin/tmradio-client
 
 debug:
-	./tmradio-client --debug
+	PYTHONPATH=src ./bin/tmradio-client --debug
+
+python:
+	PYTHONPATH=src python
 
 clean:
 	rm -f *.zip *.deb *.tar.gz
