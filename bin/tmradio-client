@@ -65,7 +65,6 @@ def fetch(url):
         return res.read()
     except Exception, e:
         print >>sys.stderr, 'Could not fetch %s: %s' % (url, e)
-        print >>sys.stderr, traceback.format_exc(e)
 
 class YamlConfig:
     """YAML interface."""
@@ -523,7 +522,7 @@ class PodcastClientThread(TwitterClientThread):
     delay = 600 # 10 minutes between updates
 
     def get_url(self):
-        return 'http://www.tmradio.net/podcast.xml'
+        return 'http://www.tmradio.net/podcast/index.xml'
 
 
 class BaseWindow(object):
