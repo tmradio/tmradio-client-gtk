@@ -18,19 +18,32 @@ data_files = [
     ('share/tmradio-client', glob.glob('data/*.ui')),
 ]
 
-packages = []
+classifiers = [
+    'Development Status :: 4 - Beta', 'Environment :: X11 Applications :: GTK',
+    'Intended Audience :: End Users/Desktop',
+    'License :: OSI Approved :: GNU General Public License (GPL)',
+    'Natural Language :: English',
+    'Operating System :: Unix',
+    'Programming Language :: Python',
+    'Topic :: Communications :: Chat',
+    'Topic :: Internet',
+    'Topic :: Multimedia :: Sound/Audio :: Players',
+    ]
+
 
 setup(
-    name = 'tmradio-client',
-    version = '0.12',
-    package_dir = { '': 'src' },
-    packages = packages,
-    description = 'media player',
     author = 'Justin Forest',
     author_email = 'hex@umonkey.net',
-    url = 'http://tmradio.net/',
-    scripts = [ 'bin/tmradio-client' ],
+    classifiers = classifiers,
     data_files = data_files,
+    description = 'An Internet radio player with embedded chat client.',
+    long_description = 'An Internet radio player with embedded XMPP chat client, Twitter and Podcast aggregator.',
     license = 'Gnu GPL',
-    requires = ['feedparser', 'gst', 'gtk', 'json', 'pygst', 'pygtk', 'xmpp', 'yaml' ]
+    name = 'tmradio-client',
+    package_dir = { '': 'src' },
+    packages = [ 'tmradio', 'tmradio.ui' ],
+    requires = [ 'feedparser', 'gst', 'gtk', 'json', 'pygst', 'pygtk', 'xmpp', 'yaml' ],
+    scripts = [ 'bin/tmradio-client' ],
+    url = 'http://tmradio.net/',
+    version = '0.12'
 )

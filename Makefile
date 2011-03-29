@@ -27,7 +27,7 @@ debug:
 clean:
 	rm -f *.zip *.deb *.tar.gz src/tmradio/*.pyc src/tmradio/ui/*.pyc
 
-bdist:
+bdist: clean
 	python setup.py bdist
 	mv dist/*gz ./
 	rm -rf build dist
