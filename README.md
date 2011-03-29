@@ -56,3 +56,4 @@ track_id, заголовок устанавливается для другой 
 
 - [Переменные окружения Питона](http://docs.python.org/using/cmdline.html#environment-variables)
 - [Writing the Setup Script](http://docs.python.org/distutils/setupscript.html)
+- [Навороченный setup.py из QuodLibet](http://code.google.com/p/quodlibet/source/browse/quodlibet/setup.py)
