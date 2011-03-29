@@ -50,12 +50,17 @@ class BaseWindow(object):
 
     def _get_builder(self, name):
         builder = gtk.Builder()
-        dirname = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'data')
-        a_file = os.path.join(dirname, 'MainWindow.ui')
-        if not os.path.exists(a_file):
-            dirname = '/usr/share/tmradio-client'
-        builder.add_from_file(os.path.join(dirname, name + '.ui'))
-        return builder
+        dirs = [
+            '/usr/share/tmradio-client',
+            '/usr/local/share/tmradio-client', os.path.dirname(__file__),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'data'),
+            ]
+        for dirname in dirs:
+            test_file = os.path.join(dirname, 'MainWindow.ui')
+            if os.path.exists(test_file):
+                builder.add_from_file(os.path.join(dirname, name + '.ui'))
+                return builder
+        raise Exception('Could not locate UI files.')
 
 
 class MessageTextView(gtk.TextView):
