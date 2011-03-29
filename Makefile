@@ -49,7 +49,10 @@ upload-deb: deb zip
 	-googlecode_upload.py -s "Version ${VERSION} of the GTK+ client for tmradio.net" -p umonkey-tools -l tmradio ${ZIP}
 
 install:
-	sudo python setup.py install
+	sudo python setup.py install --record install.log
+
+uninstall:
+	cat install.log | xargs sudo rm -f
 
 release: clean deb zip
 	mv ${DEB} ${ZIP} ${RELEASE_DIR}/
