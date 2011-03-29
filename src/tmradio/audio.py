@@ -1,5 +1,7 @@
 # vim: set fileencoding=utf-8:
 
+import os
+
 try:
     import pygst
     pygst.require('0.10')
@@ -69,7 +71,7 @@ class GstClient(DummyClient):
 
     def get_pipeline(self, uri):
         pl = gst.Pipeline('pipeline')
-        agent = 'tmradio-client/%s (%s)' % (self.version, self.config.get_jabber_chat_nick(guess=True))
+        agent = 'tmradio-client/%s; %s (%s)' % (self.version, os.name, self.config.get_jabber_chat_nick(guess=True))
         tmp = gst.parse_launch('souphttpsrc location="%s" user-agent="%s" ! decodebin ! volume ! autoaudiosink' % (uri, agent))
         self.volume = list(tmp.elements())[1]
         pl.add(tmp)
