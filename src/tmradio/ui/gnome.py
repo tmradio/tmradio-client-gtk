@@ -628,7 +628,8 @@ class MainWindow(BaseWindow):
                 for l in [x for x in self.track_labels_original if x not in current]:
                     value.append(u'-' + l)
                 value = u' '.join(value)
-            self.jabber.post_message(fmap[key] % (value, self.track_id))
+            if value:
+                self.jabber.post_message(fmap[key] % (value, self.track_id))
         self.jabber.post_message('show ' + str(self.track_id))
 
     def on_chatbtn_clicked(self, *args):
