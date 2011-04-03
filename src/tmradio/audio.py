@@ -11,6 +11,8 @@ try:
 except:
     HAVE_GSTREAMER=False
 
+import tmradio.config
+
 
 class DummyClient:
     def on_idle(self):
@@ -24,6 +26,9 @@ class DummyClient:
 
     def set_volume(self, volume):
         pass
+
+    def get_volume(self):
+        return 0.5
 
     def can_play(self):
         return False
@@ -42,7 +47,7 @@ class GstClient(DummyClient):
         self.config = config
         self.pipeline = None
         self.stream_uri = None
-        self.volume = 0.75
+        self.volume = config.get_volume()
         self.volume_ctl = None
         self.on_track_change = on_track_change
         self.restart_ts = None
@@ -105,6 +110,13 @@ class GstClient(DummyClient):
             self.volume = level
         if self.volume_ctl:
             self.volume_ctl.set_property('volume', level)
+
+        config = tmradio.config.Open()
+        config.set_volume(self.volume)
+        config.save()
+
+    def get_volume(self):
+        return self.volume
 
     def can_play(self):
         return True

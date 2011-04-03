@@ -28,6 +28,12 @@ class YamlConfig:
             return self.data[key]
         return default
 
+    def get_volume(self):
+        return float(self.get('volume', 0.75))
+
+    def set_volume(self, value):
+        self.data['volume'] = float(value)
+
     def get_jabber_id(self):
         return self.get('jabber_id')
 

@@ -302,6 +302,7 @@ class MainWindow(BaseWindow):
         self.last_chat_nick = None
         # Initialize the player.
         self.player = tmradio.audio.Open(on_track_change=self.on_stream_track_change, config=self.config, version=self.version)
+        self.builder.get_object('volume').set_value(self.player.get_volume())
         # RegExp for parsing stream title.
         self.stream_title_re = re.compile('"([^"]+)" by (.+)')
 
