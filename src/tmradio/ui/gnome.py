@@ -282,7 +282,6 @@ class MainWindow(BaseWindow):
         self.jabber = tmradio.jabber.Open(self, use_threading=USE_THREADING, version=self.version)
         self.twitter = tmradio.feed.Twitter(self.config)
         self.podcast = tmradio.feed.Podcast(self.config)
-        self.is_playing = False
         self.is_in_chat = False
         self.is_online = False # the bot is available
         self.is_visible = False
@@ -302,7 +301,7 @@ class MainWindow(BaseWindow):
         # Suppress duplicate nicknames in the chat window.
         self.last_chat_nick = None
         # Initialize the player.
-        self.player = tmradio.audio.Open(on_track_change=self.on_stream_track_change, config=self.config, version=self.version)
+        self.player = tmradio.audio.Open(on_track_change=self.on_stream_track_change, config=self.config, version=self.version, on_start=self.update_play_button, on_stop=self.update_play_button)
         self.builder.get_object('volume').set_value(self.player.get_volume())
         # RegExp for parsing stream title.
         self.stream_title_re = re.compile('"([^"]+)" by (.+)')
@@ -359,20 +358,19 @@ class MainWindow(BaseWindow):
         # gtk.main_quit()
 
     def on_play_clicked(self, widget, data=None):
-        if self.is_playing:
+        if self.player.is_playing():
             self.stop_playing()
         else:
             self.start_playing()
 
     def stop_playing(self):
         self.player.stop()
-        self.builder.get_object('play').get_image().set_from_stock('gtk-media-play', gtk.ICON_SIZE_BUTTON)
-        self.is_playing = False
+        self.update_play_button()
 
     def start_playing(self):
-        self.player.play(self.config.get_stream_uri(), volume=self.builder.get_object('volume').get_value())
-        self.builder.get_object('play').get_image().set_from_stock('gtk-media-stop', gtk.ICON_SIZE_BUTTON)
-        self.is_playing = True
+        volume = self.builder.get_object('volume').get_value()
+        self.player.play(self.config.get_stream_uri(), volume=volume or 0.5)
+        self.update_play_button()
 
     def set_track_info(self, artist, title, track_id, count, weight, tags, full_update):
         self.builder.get_object('track_artist').set_text(artist)
@@ -439,8 +437,18 @@ class MainWindow(BaseWindow):
         self.builder.get_object('chatbtn').set_sensitive(connected)
         self.builder.get_object('chatmsg').set_sensitive(self.is_in_chat and 1 or 0)
 
+        self.update_play_button()
+
         for ctl_name in ('skip', 'track_artist', 'track_title', 'track_labels', 'update'):
             self.builder.get_object(ctl_name).set_sensitive(self.track_editable and connected and self.is_online)
+
+    def update_play_button(self):
+        ctl = self.builder.get_object('play')
+        ctl.get_image().set_from_stock(self.player.is_playing() and 'gtk-media-stop' or 'gtk-media-play', gtk.ICON_SIZE_BUTTON)
+        ctl.set_sensitive(self.player.can_play())
+
+        ctl = self.builder.get_object('volume')
+        ctl.set_value(self.player.get_volume())
 
     def _process_jabber_replies(self):
         """Process the incoming jabber message queue."""
@@ -648,6 +656,7 @@ class MainWindow(BaseWindow):
 
     def on_volume_changed(self, widget, level):
         self.player.set_volume(level)
+        self.update_play_button()
 
     def on_tray_activate(self, *args):
         if self.window.get_visible():

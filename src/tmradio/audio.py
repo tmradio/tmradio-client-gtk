@@ -34,11 +34,15 @@ class DummyClient:
     def can_play(self):
         return False
 
+    def is_playing(self):
+        return False
+
 
 class GstClient(DummyClient):
     """Interaction with Gstreamer."""
+    volume_check_delay = 2 # seconds
 
-    def __init__(self, on_track_change=None, config=None, version='unknown'):
+    def __init__(self, on_track_change=None, config=None, version='unknown', on_start=None, on_stop=None):
         """Initializes the player.
 
         on_track_change is called when stream metadata updates and receives the
@@ -50,13 +54,25 @@ class GstClient(DummyClient):
         self.stream_uri = None
         self.volume = config.get_volume()
         self.volume_ctl = None
+        self.volume_check_ts = None
         self.on_track_change = on_track_change
+        self.on_start = on_start
+        self.on_stop = on_stop
         self.restart_ts = None
 
     def on_idle(self):
         if self.restart_ts and time.time() >= self.restart_ts:
             self.restart_ts = time.time() + 5 # prevent spinning
             self.play(self.stream_uri)
+
+        if self.volume_check_ts and time.time() >= self.volume_check_ts:
+            self.volume_check_ts = None
+            if self.volume and not self.is_playing():
+                tmradio.log.debug('Starting player: non-zero volume.')
+                self.play(self.config.get_stream_uri())
+            elif not self.volume and self.is_playing():
+                tmradio.log.debug('Stopping player: zero volume.')
+                self.stop()
 
     def play(self, uri, volume=None):
         tmradio.log.debug('gst: starting %s' % uri)
@@ -70,6 +86,8 @@ class GstClient(DummyClient):
         bus.connect('message', self.on_bus_message)
         self.pipeline.set_state(gst.STATE_PLAYING)
         self.stream_uri = uri
+        if self.on_start:
+            self.on_start()
 
     def stop(self):
         if self.pipeline:
@@ -77,6 +95,8 @@ class GstClient(DummyClient):
             self.pipeline.set_state(gst.STATE_NULL)
             self.pipeline = None
             self.sink = None
+            if self.on_stop:
+                self.on_stop()
 
     def get_pipeline(self, uri):
         pl = gst.Pipeline('pipeline')
@@ -107,10 +127,11 @@ class GstClient(DummyClient):
 
     def set_volume(self, level):
         tmradio.log.debug('set_volume(%s)' % level)
-        if level:
-            self.volume = level
+        self.volume = level
         if self.volume_ctl:
             self.volume_ctl.set_property('volume', level)
+
+        self.volume_check_ts = time.time() + self.volume_check_delay
 
         config = tmradio.config.Open()
         config.set_volume(self.volume)
@@ -122,8 +143,11 @@ class GstClient(DummyClient):
     def can_play(self):
         return True
 
+    def is_playing(self):
+        return self.pipeline is not None
 
-def Open(on_track_change=None, config=None, version=None):
+
+def Open(**kwargs):
     if HAVE_GSTREAMER:
-        return GstClient(on_track_change, config=config, version=version)
+        return GstClient(**kwargs)
     return DummyClient()
