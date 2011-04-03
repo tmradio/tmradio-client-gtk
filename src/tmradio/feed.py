@@ -8,16 +8,18 @@ import traceback
 import urllib
 import urllib2
 
+import tmradio.log
+
 def fetch(url):
     """Returns contents of a web resource."""
     try:
         res = urllib2.urlopen(urllib2.Request(url))
         if res is None:
-            print >>sys.stderr, 'Could not fetch', url
+            tmradio.log.error('Could not fetch %s' % url)
             return None
         return res.read()
     except Exception, e:
-        print >>sys.stderr, 'Could not fetch %s: %s' % (url, e)
+        tmradio.log.error('Could not fetch %s: %s' % (url, e))
 
 
 class TwitterClientThread(threading.Thread):
@@ -36,23 +38,23 @@ class TwitterClientThread(threading.Thread):
         self.records = {}
 
     def run(self):
-        print '%s started.' % self.__class__.__name__
+        tmradio.log.debug('%s started.' % self.__class__.__name__)
         while not self.shutting_down:
             if self.request_time > self.response_time:
                 url = self.get_url()
-                print 'Refreshing feed: ' + url
+                tmradio.log.debug('Refreshing feed: ' + url)
                 try:
                     count = 0
                     for item in feedparser.parse(fetch(url))['items']:
                         self.records[item['link']] = item
                         count += 1
-                    print 'Found %u items in %s' % (count, url)
+                    tmradio.log.debug('Found %u items in %s' % (count, url))
                     self.response_time = time.time() + self.delay
                     self.have_news = True
                 except Exception, e:
-                    print >>sys.stderr, u'Error updating feed: %s\n%s' % (e, traceback.format_exc(e))
+                    tmradio.log.error(u'Error updating feed: %s\n%s' % (e, traceback.format_exc(e)))
             time.sleep(self.sleep_time)
-        print '%s over.' % self.__class__.__name__
+        tmradio.log.debug('%s over.' % self.__class__.__name__)
 
     def update(self):
         """Requests an update."""

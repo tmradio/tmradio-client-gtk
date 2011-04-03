@@ -16,6 +16,7 @@ import tmradio.audio
 import tmradio.config
 import tmradio.feed
 import tmradio.jabber
+import tmradio.log
 
 try:
     import pynotify
@@ -270,7 +271,7 @@ class PodcastView(gtk.TreeView):
                 webbrowser.open(page_link)
 
     def on_column_resize(self, *args):
-        print 'on_column_resize', args
+        tmradio.log.debug('on_column_resize(%s)' % args)
 
 
 class MainWindow(BaseWindow):
@@ -383,16 +384,16 @@ class MainWindow(BaseWindow):
                 message += u'. You LOVE it.'
             elif self.track_vote < 0:
                 message += u'. You HATE it.'
-            print u'Notification: ' + message
+            tmradio.log.debug(u'Notification: ' + message)
             n = pynotify.Notification(self.window.get_title(), message, 'audio-volume-medium')
             n.set_urgency(pynotify.URGENCY_LOW)
             n.show()
 
     def on_stream_track_change(self, title):
-        print 'Stream title changed.'
+        tmradio.log.debug('Stream title changed.')
         m = self.stream_title_re.search(title)
         if m:
-            print m.groups()
+            tmradio.log.debug('%s' % m.groups())
 
     def set_track_id(self, track_id):
         self.track_id = track_id
@@ -479,7 +480,7 @@ class MainWindow(BaseWindow):
                 elif reply[0] == 'auth-error':
                     self.on_menu_preferences_activate()
                 else:
-                    print u'Unhandled jabber reply:', reply
+                    tmradio.log.info(u'Unhandled jabber reply: %s' % reply)
         if update_track_info:
             self.set_track_info(self.track_artist, self.track_title, self.track_id, 0, 0, self.track_labels, full_update)
             self.twitter.update()
@@ -548,7 +549,7 @@ class MainWindow(BaseWindow):
         elif key == 'track_playcount':
             pass
         else:
-            print u'Unhandled property:', reply
+            tmradio.log.debug(u'Unhandled property: ' + str(reply))
 
         if key in ('track_title', 'track_artist', 'track_length'):
             text = u'%s — %s' % (self.track_artist, self.track_title)

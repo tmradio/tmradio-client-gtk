@@ -15,6 +15,8 @@ import urlparse
 import xmpp
 import Queue
 
+import tmradio.log
+
 class Jabber:
     """Simple jabber client.
 
@@ -168,7 +170,7 @@ class Jabber:
         if msg.getType() == 'groupchat':
             parts = unicode(msg.getFrom()).split('/')
             if len(parts) < 2:
-                pass # print msg
+                pass # tmradio.log.debug(msg)
             else:
                 nick = unicode(msg.getFrom()).split('/')[1]
                 self.post_replies([
@@ -333,7 +335,7 @@ class Jabber:
             self._log('sent to bot: %s' % text)
 
     def _log(self, message):
-        pass # print >>sys.stderr, 'jabber:', message # FIXME: use a real log, this breaks Windows console (CP-866).
+        pass # tmradio.log.error('jabber:', message) # FIXME: use a real log, this breaks Windows console (CP-866).
 
     def _on_disconnected(self):
         self._log('disconnected from the server, reconnecting in 5 seconds.')

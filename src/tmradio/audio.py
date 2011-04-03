@@ -12,6 +12,7 @@ except:
     HAVE_GSTREAMER=False
 
 import tmradio.config
+import tmradio.log
 
 
 class DummyClient:
@@ -58,7 +59,7 @@ class GstClient(DummyClient):
             self.play(self.stream_uri)
 
     def play(self, uri, volume=None):
-        print 'gst: starting %s' % uri
+        tmradio.log.debug('gst: starting %s' % uri)
         if volume:
             self.volume = volume
         self.restart_ts = None
@@ -72,7 +73,7 @@ class GstClient(DummyClient):
 
     def stop(self):
         if self.pipeline:
-            print 'gst: stopping %s' % self.stream_uri
+            tmradio.log.debug('gst: stopping %s' % self.stream_uri)
             self.pipeline.set_state(gst.STATE_NULL)
             self.pipeline = None
             self.sink = None
@@ -92,20 +93,20 @@ class GstClient(DummyClient):
             rtags = message.parse_tag()
             for key in rtags.keys():
                 dtags[key] = rtags[key]
-            print 'Stream info updated:', dtags
+            tmradio.log.debug('Stream info updated: %s' % dtags)
             if dtags.has_key('title'):
                 self.on_track_change(dtags['title'])
         elif t == gst.MESSAGE_BUFFERING:
             pass
         elif t == gst.MESSAGE_EOS or t == gst.MESSAGE_ERROR: # restart
-            print 'gst: stream needs restarting.'
+            tmradio.log.info('gst: stream needs restarting.')
             self.stop()
             self.restart_ts = time.time() + 2
         else:
-            pass # print message
+            pass # tmradio.log.debug(message)
 
     def set_volume(self, level):
-        print 'set_volume(%s)' % level
+        tmradio.log.debug('set_volume(%s)' % level)
         if level:
             self.volume = level
         if self.volume_ctl:
