@@ -4,6 +4,10 @@ Version 0.13
 - GStreamer is optional; no sound if not available (chat works).
 - Disabled most console logging.
 - Saving unchanged tags no longer tags the track with "for $id".
+- Standard logging library is used.
+- Volume level is no longer reset on network failure.
+- Volume level is saved in the config file.
+- Playback stops when muted, restarts when volume is increased.
 
 
 Version 0.12
