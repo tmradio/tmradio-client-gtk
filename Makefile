@@ -1,6 +1,7 @@
 VERSION=0.12
 DEB=tmradio-client-gtk-${VERSION}.deb
 ZIP=tmradio-client-gtk-${VERSION}.zip
+TAR=tmradio-client-gtk-${VERSION}.tar.gz
 RELEASE_DIR=/remote/files.tmradio.net/software/client
 
 all: help
@@ -41,12 +42,16 @@ deb: bdist
 	fakeroot dpkg -b debian ${DEB}
 	rm -rf debian/usr debian/DEBIAN/control
 
-zip: clean
-	zip -r9 ${ZIP} bin data src Makefile CHANGES COPYING README.md setup.py
+zip:
+	zip -qr9 ${ZIP} bin data src Makefile CHANGES COPYING README.md setup.py
 
-upload-deb: deb zip
+tar:
+	tar cfz ${TAR} bin data src Makefile CHANGES COPYING README.md setup.py
+
+upload-deb: clean deb zip tar
 	-googlecode_upload.py -s "Version ${VERSION} of the GTK+ client for tmradio.net" -p umonkey-tools -l tmradio ${DEB}
 	-googlecode_upload.py -s "Version ${VERSION} of the GTK+ client for tmradio.net" -p umonkey-tools -l tmradio ${ZIP}
+	-googlecode_upload.py -s "Version ${VERSION} of the GTK+ client for tmradio.net" -p umonkey-tools -l tmradio ${TAR}
 
 install:
 	sudo python setup.py install --record install.log
