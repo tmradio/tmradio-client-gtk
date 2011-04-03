@@ -1,6 +1,7 @@
 # vim: set fileencoding=utf-8:
 
 import os
+import time
 
 try:
     import pygst
@@ -41,7 +42,8 @@ class GstClient(DummyClient):
         self.config = config
         self.pipeline = None
         self.stream_uri = None
-        self.volume = None
+        self.volume = 0.75
+        self.volume_ctl = None
         self.on_track_change = on_track_change
         self.restart_ts = None
 
@@ -52,10 +54,11 @@ class GstClient(DummyClient):
 
     def play(self, uri, volume=None):
         print 'gst: starting %s' % uri
+        if volume:
+            self.volume = volume
         self.restart_ts = None
         self.pipeline = self.get_pipeline(uri)
-        if volume:
-            self.volume.set_property('volume', volume)
+        self.volume_ctl.set_property('volume', self.volume)
         bus = self.pipeline.get_bus()
         bus.add_signal_watch()
         bus.connect('message', self.on_bus_message)
@@ -73,7 +76,7 @@ class GstClient(DummyClient):
         pl = gst.Pipeline('pipeline')
         agent = 'tmradio-client/%s; %s (%s)' % (self.version, os.name, self.config.get_jabber_chat_nick(guess=True))
         tmp = gst.parse_launch('souphttpsrc location="%s" user-agent="%s" ! decodebin ! volume ! autoaudiosink' % (uri, agent))
-        self.volume = list(tmp.elements())[1]
+        self.volume_ctl = list(tmp.elements())[1]
         pl.add(tmp)
         return pl
 
@@ -97,8 +100,11 @@ class GstClient(DummyClient):
             pass # print message
 
     def set_volume(self, level):
-        if self.volume:
-            self.volume.set_property('volume', level)
+        print 'set_volume(%s)' % level
+        if level:
+            self.volume = level
+        if self.volume_ctl:
+            self.volume_ctl.set_property('volume', level)
 
     def can_play(self):
         return True
