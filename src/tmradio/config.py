@@ -46,7 +46,8 @@ class YamlConfig:
         self.data['jabber_id'] = value
 
     def get_jabber_password(self):
-        return base64.b64decode(self.get('jabber_password'))
+        value = self.get('jabber_password')
+        return value and base64.b64decode(value) or ''
 
     def set_jabber_password(self, value):
         self.data['jabber_password'] = base64.b64encode(value)
