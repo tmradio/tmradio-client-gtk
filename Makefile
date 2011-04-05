@@ -11,18 +11,18 @@ help:
 	@echo "clean    delete temporary files"
 	@echo "config   edit your client's config"
 	@echo "deb      build a Debian package"
-	@echo "debug    run the client in debug mode (lots of jabber output)"
 	@echo "install  install the client (using setup.py)"
-	@echo "test     run the client in normal mode"
+	@echo "run      run the client in nirmal mode"
+	@echo "test     run the client in debug mode"
 	@echo "zip      build a source ZIP archive"
 
 config:
 	editor $(HOME)/.tmradio-client.yaml
 
-test:
+run:
 	./bin/tmradio-client 2>&1 | tee client.log
 
-debug:
+test:
 	./bin/tmradio-client --debug 2>&1 | tee client.log
 
 clean:

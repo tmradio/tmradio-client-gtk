@@ -5,10 +5,12 @@ import os
 import sys
 import yaml
 
+CONFIG_NAME = '~/.tmradio-client.yaml'
+
 class YamlConfig:
     """YAML interface."""
     def __init__(self):
-        self.filename = os.path.expanduser('~/.tmradio-client.yaml')
+        self.filename = os.path.expanduser(CONFIG_NAME)
         if os.path.exists(self.filename):
             self.data = yaml.load(open(self.filename, 'rb').read())
         else:

@@ -10,11 +10,14 @@ if os.path.exists(src_dir) and os.path.exists(os.path.join(src_dir, 'tmradio')):
     sys.path.insert(0, src_dir)
 
 import tmradio.ui
+import tmradio.config
 
 VERSION = '0.13'
 
 if __name__ == '__main__':
     try:
+        if '--debug' in sys.argv:
+            tmradio.config.CONFIG_NAME = '~/.tmradio-client-debug.yaml'
         tmradio.ui.Run(version=VERSION)
     except KeyboardInterrupt:
         print >>sys.stderr, 'Shutting down.'
