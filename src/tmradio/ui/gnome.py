@@ -68,7 +68,6 @@ class MessageTextView(gtk.TextView):
     def __init__(self, parent, collapse_nicknames=False):
         gtk.TextView.__init__(self)
         self.url_tags = []
-        self.url_map = {}
         self.set_property('pixels-above-lines', 4)
         self.set_property('wrap-mode', gtk.WRAP_WORD)
         self.set_property('indent', -20)
@@ -125,8 +124,6 @@ class MessageTextView(gtk.TextView):
 
     def on_link_event(self, tag, tv, event, iterator, link):
         link = link.rstrip(',.!?)')
-        if self.url_map.has_key(link):
-            link = self.url_map[link]
         if event.type == gtk.gdk.BUTTON_PRESS and event.button == 3:
             menu = gtk.Menu()
             item = gtk.MenuItem('Open link')
@@ -179,12 +176,10 @@ class MessageTextView(gtk.TextView):
             t.set_property('underline', pango.UNDERLINE_SINGLE)
             t.connect('event', self.on_link_event, kwargs['nicklink'])
             self.url_tags.append(t)
-            self.url_map[kwargs['nick']] = kwargs['nicklink']
         tb.insert_with_tags(eob, kwargs['nick'], t)
 
     def clear(self):
         self.url_tags = []
-        self.url_map = {}
         tb = self.get_buffer()
         sob, eob = tb.get_bounds()
         tb.delete(sob, eob)
@@ -501,7 +496,10 @@ class MainWindow(BaseWindow):
         if items:
             self.twit_tab.clear()
             for item in items:
-                author = item['author'].split(' ')[0]
+                if '@' in item['author']:
+                    author = item['author'].split(' ', 1)[1].strip('()')
+                else:
+                    author = item['author'].split(' ')[0]
                 self.twit_tab.add_message(time=item['timestamp'], nick=author, message=item['title'], nicklink=item['link'])
 
     def _update_podcast(self):
