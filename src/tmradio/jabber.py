@@ -4,7 +4,6 @@
 import warnings
 warnings.filterwarnings("ignore")
 
-import datetime
 import json
 import os
 import random
@@ -202,7 +201,7 @@ class Jabber:
             return None
         if not 'stamp' in delay.attrs:
             return None
-        return datetime.datetime.strptime(delay.attrs['stamp'][:19], '%Y-%m-%dT%H:%M:%S')
+        return time.mktime(time.strptime(delay.attrs['stamp'][:19], '%Y-%m-%dT%H:%M:%S'))
 
     def _on_presence(self, conn, msg):
         """Process incoming presences."""

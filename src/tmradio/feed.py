@@ -10,6 +10,9 @@ import urllib2
 
 import tmradio.log
 
+BLOG_FEED = 'http://www.tmradio.net/blog/index.xml'
+PODCAST_FEED = 'http://www.tmradio.net/podcast/index.xml'
+
 def fetch(url):
     """Returns contents of a web resource."""
     try:
@@ -41,20 +44,28 @@ class TwitterClientThread(threading.Thread):
         tmradio.log.debug('%s started.' % self.__class__.__name__)
         while not self.shutting_down:
             if self.request_time > self.response_time:
-                url = self.get_url()
-                tmradio.log.debug('Refreshing feed: ' + url)
-                try:
-                    count = 0
-                    for item in feedparser.parse(fetch(url))['items']:
-                        self.records[item['link']] = item
-                        count += 1
-                    tmradio.log.debug('Found %u items in %s' % (count, url))
-                    self.response_time = time.time() + self.delay
-                    self.have_news = True
-                except Exception, e:
-                    tmradio.log.error(u'Error updating feed: %s\n%s' % (e, traceback.format_exc(e)))
+                urls = self.get_url()
+                if type(urls) != tuple and type(urls) != list:
+                    urls = [urls]
+                for url in urls:
+                    tmradio.log.debug('Refreshing feed: ' + url)
+                    try:
+                        count = 0
+                        for item in feedparser.parse(fetch(url))['items']:
+                            self.records[item['link']] = self.prepare_feed_item(item)
+                            count += 1
+                        tmradio.log.debug('Found %u items in %s' % (count, url))
+                        self.response_time = time.time() + self.delay
+                        self.have_news = True
+                    except Exception, e:
+                        tmradio.log.error(u'Error updating feed: %s\n%s' % (e, traceback.format_exc(e)))
             time.sleep(self.sleep_time)
         tmradio.log.debug('%s over.' % self.__class__.__name__)
+
+    def prepare_feed_item(self, item):
+        item['timestamp'] = time.mktime(item['updated_parsed'])
+        tmradio.log.debug(item['updated_parsed'])
+        return item
 
     def update(self):
         """Requests an update."""
@@ -71,14 +82,14 @@ class TwitterClientThread(threading.Thread):
         return item['updated_parsed']
 
     def get_url(self):
-        return 'http://search.twitter.com/search.atom?q=' + urllib.quote(self.config.get_twitter_search())
+        return ('http://search.twitter.com/search.atom?q=' + urllib.quote(self.config.get_twitter_search()), BLOG_FEED)
 
 
 class PodcastClientThread(TwitterClientThread):
     delay = 600 # 10 minutes between updates
 
     def get_url(self):
-        return 'http://www.tmradio.net/podcast/index.xml'
+        return PODCAST_FEED
 
 
 def Twitter(config):

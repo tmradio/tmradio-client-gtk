@@ -144,7 +144,7 @@ class MessageTextView(gtk.TextView):
         kwargs = {'time': datetime.datetime.now(), 'nick': None, 'nicklink': None, 'message': '' }
         kwargs.update(_kwargs)
 
-        time = kwargs['time']
+        ts = kwargs['time']
         nick = kwargs['nick']
         nicklink = kwargs['nicklink']
         text = kwargs['message'].strip()
@@ -155,7 +155,7 @@ class MessageTextView(gtk.TextView):
         if tb.get_char_count():
             tb.insert(eob, '\n')
 
-        tb.insert_with_tags_by_name(eob, time.strftime('%d.%m %H:%M '), 'time')
+        tb.insert_with_tags_by_name(eob, time.strftime('%d.%m %H:%M ', time.localtime(ts)), 'time')
         self._add_nickname(tb, eob, kwargs)
         tb.insert(eob, ':')
 
@@ -177,7 +177,7 @@ class MessageTextView(gtk.TextView):
         t.set_property('weight', 800)
         if kwargs['nicklink']:
             t.set_property('underline', pango.UNDERLINE_SINGLE)
-            t.connect('event', self.on_link_event, kwargs['nick'])
+            t.connect('event', self.on_link_event, kwargs['nicklink'])
             self.url_tags.append(t)
             self.url_map[kwargs['nick']] = kwargs['nicklink']
         tb.insert_with_tags(eob, kwargs['nick'], t)
@@ -469,7 +469,7 @@ class MainWindow(BaseWindow):
                     self.is_online = False
                 elif reply[0] == 'chat':
                     self.is_online = True
-                    timestamp = len(reply) > 3 and reply[3] or datetime.datetime.now()
+                    timestamp = len(reply) > 3 and reply[3] or time.time()
                     self.add_chat(reply[1], reply[2], timestamp)
                 elif reply[0] == 'joined':
                     self.is_online = True
@@ -502,8 +502,7 @@ class MainWindow(BaseWindow):
             self.twit_tab.clear()
             for item in items:
                 author = item['author'].split(' ')[0]
-                tstamp = datetime.datetime.strptime(item['updated'], '%Y-%m-%dT%H:%M:%SZ')
-                self.twit_tab.add_message(time=tstamp, nick=author, message=item['title'], nicklink=item['link'])
+                self.twit_tab.add_message(time=item['timestamp'], nick=author, message=item['title'], nicklink=item['link'])
 
     def _update_podcast(self):
         items = self.podcast.get_records()

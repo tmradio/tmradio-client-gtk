@@ -8,6 +8,7 @@ Version 0.13
 - Volume level is no longer reset on network failure.
 - Volume level is saved in the config file.
 - Playback stops when muted, restarts when volume is increased.
+- Added blog entries to the News tab.
 
 
 Version 0.12
