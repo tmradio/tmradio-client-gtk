@@ -9,6 +9,9 @@ Version 0.13
 - Volume level is saved in the config file.
 - Playback stops when muted, restarts when volume is increased.
 - Added blog entries to the News tab.
+- Separate config file for --debug mode.
+- Fixed empty config file on first startup.
+- Chat messages are logged to ~/tmradio-chat.log
 
 
 Version 0.12
