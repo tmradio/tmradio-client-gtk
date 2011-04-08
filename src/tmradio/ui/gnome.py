@@ -394,9 +394,12 @@ class MainWindow(BaseWindow):
     def clear_chat(self):
         self.chat_tab.clear()
 
-    def add_chat(self, text, nick=None, time=None):
+    def add_chat(self, text, nick=None, time=None, offline=False):
         if text and text.strip():
-            self.chat_tab.add_message(time=time, nick=nick or u'Robot', message=text)
+            nick = nick or u'Robot'
+            if not offline:
+                tmradio.log.chat(nick + u': ' + text)
+            self.chat_tab.add_message(time=time, nick=nick, message=text)
 
     def on_idle(self):
         """Update controls, process xmpp messages.""" 
@@ -464,8 +467,10 @@ class MainWindow(BaseWindow):
                     self.is_online = False
                 elif reply[0] == 'chat':
                     self.is_online = True
-                    timestamp = len(reply) > 3 and reply[3] or time.time()
-                    self.add_chat(reply[1], reply[2], timestamp)
+                    tmradio.log.debug(reply)
+                    offline = len(reply) > 3 and reply[3]
+                    timestamp = offline and reply[3] or time.time()
+                    self.add_chat(reply[1], reply[2], timestamp, offline)
                 elif reply[0] == 'joined':
                     self.is_online = True
                     self.is_in_chat = True

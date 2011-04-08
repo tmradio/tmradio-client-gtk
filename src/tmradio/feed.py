@@ -64,7 +64,6 @@ class TwitterClientThread(threading.Thread):
 
     def prepare_feed_item(self, item):
         item['timestamp'] = time.mktime(item['updated_parsed'])
-        tmradio.log.debug(item['updated_parsed'])
         return item
 
     def update(self):

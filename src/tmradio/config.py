@@ -39,6 +39,9 @@ class YamlConfig:
     def get_log(self):
         return self.get('log', '~/tmradio-client.log')
 
+    def get_chat_log(self):
+        return self.get('log', '~/tmradio-chat.log')
+
     def get_jabber_id(self):
         return self.get('jabber_id')
 
