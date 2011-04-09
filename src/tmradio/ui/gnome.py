@@ -184,7 +184,11 @@ class MessageTextView(gtk.TextView):
                 self.url_tags.append(t)
             elif self.nickTruncated and self.nickTruncated in word:
                 t = tb.create_tag()
-                t.set_property('foreground', 'red')
+                config = tmradio.config.Open()
+                t.set_property('foreground', config.get('nick_highlight_color', 'red'))
+                bg = config.get('nick_highlight_bgcolor', None)
+                if bg is not None:
+                    t.set_property('background', bg)
                 tb.insert_with_tags(eob, word, t)
                 notifyUser = u'Вас упомянули в чате!'               
             else:
