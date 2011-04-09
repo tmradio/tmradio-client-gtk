@@ -322,7 +322,6 @@ class MainWindow(BaseWindow):
         self.podcast = tmradio.feed.Podcast(self.config)
         self.is_in_chat = False
         self.is_online = False # the bot is available
-        self.is_visible = False
         # Track properties.
         self.track_id = None
         self.track_artist = None
@@ -344,7 +343,7 @@ class MainWindow(BaseWindow):
         # RegExp for parsing stream title.
         self.stream_title_re = re.compile('"([^"]+)" by (.+)')
 
-        self.window.connect('window-state-event', self.on_window_state)
+        self.window.connect('notify::is-active', self.on_visibility_change)
 
         self.init_tabs()
         gobject.timeout_add(30, self.on_idle)
@@ -356,10 +355,9 @@ class MainWindow(BaseWindow):
         self.podcast.start()
         self._jabber_autoconnect()
 
-    def on_window_state(self, window, event):
-        mask = gtk.gdk.WINDOW_STATE_ICONIFIED | gtk.gdk.WINDOW_STATE_WITHDRAWN
+    def on_visibility_change(self, widget, event):
         global main_window_visible
-        main_window_visible = self.is_visible = not (event.new_window_state & mask)
+        main_window_visible = widget.props.is_active
 
     def init_tabs(self):
         self.chat_tab = MessageView(self.builder.get_object('chatscroll'), collapse_nicknames=True, jid=self.config.get_jabber_id(), nick=self.config.get_jabber_chat_nick())
