@@ -24,14 +24,15 @@
 
 - chat_log (str), имя файла для сообщений из чата.
 - debug (bool), установка аналогична запуску с --debug.
+- highlight_bgcolor (str), цвет упоминаний (фон).
+- highlight_color (str), цвет упоминаний (текст).
+- highlight_re (str), выражение для подсветки в чате.
 - jabber_bot (str), jid бота радиостанции.
 - jabber_chat_nick (str), предпочитаемый ник в чате.
 - jabber_chat_room (str), адрес чата.
 - jabber_id (str), логин в джаббере.
 - jabber_password (str), пароль к джабберу, закодирован в base64.
 - log (str), имя файла для отладочных сообщений.
-- nick_highlight_bgcolor (str), цвет упоминаний (фон).
-- nick_highlight_color (str), цвет упоминаний (текст).
 - stream_uri (str), URL потока для проигрывания.
 - twitter_search (str), строка для поиска новостей в твиттере.
 - volume (float), текущая громкость.

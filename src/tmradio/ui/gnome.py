@@ -68,9 +68,7 @@ class MessageTextView(gtk.TextView):
     def __init__(self, parent, collapse_nicknames=False, **kwargs):
         gtk.TextView.__init__(self)
        
-        self.nickTruncated = None
-        if kwargs.has_key('nick'):
-            self.nickTruncated = self.get_clean_nickname(kwargs['nick'])
+        self.highlight_re = self.get_highlight_re()
         
         self.url_tags = []
         self.set_property('pixels-above-lines', 4)
@@ -89,16 +87,14 @@ class MessageTextView(gtk.TextView):
         parent.add_with_viewport(self)
         self.show_all()
 
-    def get_clean_nickname(self, nickname):
-        """Cleans up the nickname.
+    def get_highlight_re(self):
+        config = tmradio.config.Open()
 
-        Removes trailing underscores and the bracketed suffix."""
-        nickname = nickname.rstrip('_')
-        if nickname.endswith(')'):
-            parts = nickname.split(u' ')
-            if parts[-1].startswith('('):
-                nickname = u' '.join(parts[:-1])
-        return nickname
+        expr = config.get('highlight_re')
+        if expr is None:
+            expr = config.get_jabber_id() + u'|' + config.get_jabber_chat_nick()
+
+        return re.compile(expr)
 
     def on_va_changed(self, vadjust):
         vadjust.need_scroll = abs(vadjust.value + vadjust.page_size - vadjust.upper) < vadjust.step_increment
@@ -182,19 +178,23 @@ class MessageTextView(gtk.TextView):
                 t.connect('event', self.on_link_event, word)
                 tb.insert_with_tags(eob, word, t)
                 self.url_tags.append(t)
-            elif self.nickTruncated and self.nickTruncated in word:
+            elif self.highlight_re.search(word) is not None:
                 t = tb.create_tag()
                 config = tmradio.config.Open()
-                t.set_property('foreground', config.get('nick_highlight_color', 'red'))
-                bg = config.get('nick_highlight_bgcolor', None)
+                t.set_property('foreground', config.get('highlight_color', 'red'))
+                bg = config.get('highlight_bgcolor', None)
                 if bg is not None:
                     t.set_property('background', bg)
                 tb.insert_with_tags(eob, word, t)
-                notifyUser = u'Вас упомянули в чате!'               
+                notifyUser = True
             else:
                 tb.insert(eob, word)
+
+        if not notifyUser and self.highlight_re.search(text):
+            notifyUser = True
+
         if notifyUser:
-            n = pynotify.Notification(u'Чат ТМ-Радио', notifyUser, 'audio-volume-medium')
+            n = pynotify.Notification(u'Чат ТМ-Радио', u'You were mentioned in the chat!', 'audio-volume-medium')
             n.set_urgency(pynotify.URGENCY_LOW)
             n.show()
             
