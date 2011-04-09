@@ -65,8 +65,13 @@ class BaseWindow(object):
 
 
 class MessageTextView(gtk.TextView):
-    def __init__(self, parent, collapse_nicknames=False):
+    def __init__(self, parent, collapse_nicknames=False, **kwargs):
         gtk.TextView.__init__(self)
+       
+        self.nickTruncated = None
+        if kwargs.has_key('nick'):
+            self.nickTruncated = self.get_clean_nickname(kwargs['nick'])
+        
         self.url_tags = []
         self.set_property('pixels-above-lines', 4)
         self.set_property('wrap-mode', gtk.WRAP_WORD)
@@ -83,6 +88,17 @@ class MessageTextView(gtk.TextView):
         self.setup_tags()
         parent.add_with_viewport(self)
         self.show_all()
+
+    def get_clean_nickname(self, nickname):
+        """Cleans up the nickname.
+
+        Removes trailing underscores and the bracketed suffix."""
+        nickname = nickname.rstrip('_')
+        if nickname.endswith(')'):
+            parts = nickname.split(u' ')
+            if parts[-1].startswith('('):
+                nickname = u' '.join(parts[:-1])
+        return nickname
 
     def on_va_changed(self, vadjust):
         vadjust.need_scroll = abs(vadjust.value + vadjust.page_size - vadjust.upper) < vadjust.step_increment
@@ -155,7 +171,7 @@ class MessageTextView(gtk.TextView):
         tb.insert_with_tags_by_name(eob, time.strftime('%d.%m %H:%M ', time.localtime(ts)), 'time')
         self._add_nickname(tb, eob, kwargs)
         tb.insert(eob, ':')
-
+        notifyUser = False
         for word in text.split(' '):
             tb.insert(eob, ' ')
             if is_url(word):
@@ -166,9 +182,18 @@ class MessageTextView(gtk.TextView):
                 t.connect('event', self.on_link_event, word)
                 tb.insert_with_tags(eob, word, t)
                 self.url_tags.append(t)
+            elif self.nickTruncated and self.nickTruncated in word:
+                t = tb.create_tag()
+                t.set_property('foreground', 'red')
+                tb.insert_with_tags(eob, word, t)
+                notifyUser = u'Вас упомянули в чате!'               
             else:
                 tb.insert(eob, word)
-
+        if notifyUser:
+            n = pynotify.Notification(u'Чат ТМ-Радио', notifyUser, 'audio-volume-medium')
+            n.set_urgency(pynotify.URGENCY_LOW)
+            n.show()
+            
     def _add_nickname(self, tb, eob, kwargs):
         t = tb.create_tag()
         t.set_property('weight', 800)
@@ -318,7 +343,7 @@ class MainWindow(BaseWindow):
         self.is_visible = not (event.new_window_state & mask)
 
     def init_tabs(self):
-        self.chat_tab = MessageView(self.builder.get_object('chatscroll'), collapse_nicknames=True)
+        self.chat_tab = MessageView(self.builder.get_object('chatscroll'), collapse_nicknames=True, jid=self.config.get_jabber_id(), nick=self.config.get_jabber_chat_nick())
         self.twit_tab = MessageView(self.builder.get_object('twitscroll'))
         self.cast_tab = PodcastView(self.builder.get_object('podscroll'))
         self.init_nicklist()

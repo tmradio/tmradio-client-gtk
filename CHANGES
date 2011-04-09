@@ -13,6 +13,7 @@ Version 0.13
 - Fixed empty config file on first startup.
 - Chat messages are logged to ~/tmradio-chat.log
 - Track weight is shown in the progress bar.
+- Notify the user when he's mentioned in the chat.
 
 
 Version 0.12
