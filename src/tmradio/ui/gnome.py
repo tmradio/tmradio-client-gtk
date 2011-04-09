@@ -29,6 +29,9 @@ USE_THREADING = False
 # Global kill switch.
 shutting_down = False
 
+# Set when the main window is visible.
+main_window_visible = True
+
 def is_url(text):
     parts = text.split(':')
     if not parts[0] in ('http', 'https', 'ftp', 'mailto'):
@@ -36,6 +39,19 @@ def is_url(text):
     if parts[0] == 'mailto':
         return '@' in parts[1]
     return parts[1].startswith('//')
+
+
+def notify(text):
+    """Displays a notification.
+
+    Notification title and icon are read from the notify_title and notify_icon
+    config options, some defaults are applies.  Messages are logged."""
+    tmradio.log.debug(u'Notification: ' + text)
+    if HAVE_NOTIFY and not main_window_visible:
+        config = tmradio.config.Open()
+        n = pynotify.Notification(config.get('notify_title', 'TMRadio Client'), text, config.get('notify_icon', 'audio-volume-medium'))
+        n.set_urgency(pynotify.URGENCY_LOW)
+        n.show()
 
 
 class BaseWindow(object):
@@ -194,9 +210,7 @@ class MessageTextView(gtk.TextView):
             notifyUser = True
 
         if notifyUser:
-            n = pynotify.Notification(u'Чат ТМ-Радио', u'You were mentioned in the chat!', 'audio-volume-medium')
-            n.set_urgency(pynotify.URGENCY_LOW)
-            n.show()
+            notify(u'You were mentioned in the chat!')
             
     def _add_nickname(self, tb, eob, kwargs):
         t = tb.create_tag()
@@ -344,7 +358,8 @@ class MainWindow(BaseWindow):
 
     def on_window_state(self, window, event):
         mask = gtk.gdk.WINDOW_STATE_ICONIFIED | gtk.gdk.WINDOW_STATE_WITHDRAWN
-        self.is_visible = not (event.new_window_state & mask)
+        global main_window_visible
+        main_window_visible = self.is_visible = not (event.new_window_state & mask)
 
     def init_tabs(self):
         self.chat_tab = MessageView(self.builder.get_object('chatscroll'), collapse_nicknames=True, jid=self.config.get_jabber_id(), nick=self.config.get_jabber_chat_nick())
@@ -400,16 +415,13 @@ class MainWindow(BaseWindow):
         self.builder.get_object('track_artist').set_text(artist)
         self.builder.get_object('track_title').set_text(title)
         self.builder.get_object('track_labels').set_text(u' '.join(tags))
-        if HAVE_NOTIFY and full_update and not self.is_visible:
+        if full_update:
             message = u'"%s" by %s' % (title, artist)
             if self.track_vote > 0:
                 message += u'. You LOVE it.'
             elif self.track_vote < 0:
                 message += u'. You HATE it.'
-            tmradio.log.debug(u'Notification: ' + message)
-            n = pynotify.Notification(self.window.get_title(), message, 'audio-volume-medium')
-            n.set_urgency(pynotify.URGENCY_LOW)
-            n.show()
+            notify(message)
 
     def on_stream_track_change(self, title):
         tmradio.log.debug('Stream title changed.')

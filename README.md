@@ -33,6 +33,10 @@
 - jabber_id (str), логин в джаббере.
 - jabber_password (str), пароль к джабберу, закодирован в base64.
 - log (str), имя файла для отладочных сообщений.
+- notify_icon (str), иконка для всплывающих уведомлений, по умолчанию
+  "audio-volume-medium".
+- notify_title (str), заголовок всплывающих уведомлений, по умолчанию "TMRadio
+  Client".
 - stream_uri (str), URL потока для проигрывания.
 - twitter_search (str), строка для поиска новостей в твиттере.
 - volume (float), текущая громкость.
