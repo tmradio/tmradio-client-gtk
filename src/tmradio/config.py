@@ -26,7 +26,7 @@ class YamlConfig:
             os.chmod(self.filename, 0600)
 
     def get(self, key, default=None):
-        if self.data.has_key(key):
+        if key in self.data:
             return self.data[key]
         return default
 

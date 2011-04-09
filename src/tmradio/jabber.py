@@ -119,7 +119,7 @@ class Jabber:
         return True
 
     def _get_proxy_settings(self):
-        if not os.environ.has_key('http_proxy'):
+        if 'http_proxy' not in os.environ:
             return None
         url = urlparse.urlparse(os.environ['http_proxy'])
         if not url.netloc:
@@ -188,7 +188,7 @@ class Jabber:
                 replies = []
                 for key in data:
                     value = data[key]
-                    if keys.has_key(key):
+                    if key in keys:
                         key = keys[key]
                     replies.append(('set', key, value))
                 self.post_replies(replies)

@@ -551,13 +551,13 @@ class MainWindow(BaseWindow):
         if items:
             # self.twit_tab.clear()
             for item in items:
-                if item.has_key('enclosures'):
+                if 'enclosures' in item:
                     audio_link = None
                     audio_size = None
                     for enc in item['enclosures']:
-                        if enc.has_key('type') and enc['type'].startswith('audio/'):
+                        if 'type' in enc and enc['type'].startswith('audio/'):
                             audio_link = enc['href']
-                            audio_size = enc.has_key('length') and int(enc['length']) or 1024
+                            audio_size = 'length' in enc and int(enc['length']) or 1024
                     self.cast_tab.add(item['updated_parsed'], item['title'], item['link'], audio_link, audio_size)
 
     def _process_jabber_property(self, reply):

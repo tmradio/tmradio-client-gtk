@@ -114,7 +114,7 @@ class GstClient(DummyClient):
             for key in rtags.keys():
                 dtags[key] = rtags[key]
             tmradio.log.debug('Stream info updated: %s' % dtags)
-            if dtags.has_key('title'):
+            if 'title' in dtags:
                 self.on_track_change(dtags['title'])
         elif t == gst.MESSAGE_BUFFERING:
             pass
