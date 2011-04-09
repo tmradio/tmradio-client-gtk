@@ -701,10 +701,10 @@ class MainWindow(BaseWindow):
         self.update_play_button()
 
     def on_tray_activate(self, *args):
-        if self.window.get_visible():
+        if self.window.props.is_active:
             self.window.hide()
         else:
-            self.window.show()
+            self.window.present()
 
     def on_tray_scroll(self, icon, event):
         delta = 0.1

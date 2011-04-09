@@ -14,6 +14,7 @@ Version 0.13
 - Chat messages are logged to ~/tmradio-chat.log
 - Track weight is shown in the progress bar.
 - Notify the user when he's mentioned in the chat.
+- Clicking the tray icon raises the window is it was not visible.
 
 
 Version 0.12
