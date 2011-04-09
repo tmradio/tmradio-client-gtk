@@ -555,7 +555,7 @@ class MainWindow(BaseWindow):
             self.window.set_title(title)
             self.builder.get_object('tray').set_tooltip(title)
         elif key == 'track_weight':
-            pass
+            self.track_weight = value
         elif key == 'track_playcount':
             pass
         else:
@@ -565,6 +565,7 @@ class MainWindow(BaseWindow):
             text = u'%s — %s' % (self.track_artist, self.track_title)
             if self.track_length:
                 text += u' [%u:%02u]' % (self.track_length / 60, self.track_length % 60)
+                text += u' ⚖%s' % self.track_weight
             self.builder.get_object('progress').set_text(text)
 
     def _add_chat_user(self, name, joined=True):

@@ -12,6 +12,7 @@ Version 0.13
 - Separate config file for --debug mode.
 - Fixed empty config file on first startup.
 - Chat messages are logged to ~/tmradio-chat.log
+- Track weight is shown in the progress bar.
 
 
 Version 0.12
