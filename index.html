@@ -20,6 +20,9 @@
       #shots { margin: 10px 0 0; padding: 0; list-style-type: none; }
       #shots li { margin: 0 10px 0; display: inline; }
       #shots img { width: 100px; height: 100px; }
+      .shot { margin: 20px 0 40px; clear: left; min-height: 146px; }
+      .shot img { border: solid 1px #ccc; float: left; width: 256px; height: 144px; }
+      .shot p { margin-left: 276px; }
     </style>
     <script type="text/javascript">var _gaq = _gaq || []; _gaq.push(['_setAccount', 'UA-18456281-2']); _gaq.push(['_trackPageview']); (function() { var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true; ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s); })();</script>
   </head>
@@ -31,16 +34,42 @@
         <div id="media">
           <iframe src="http://player.vimeo.com/video/20916539?byline=0&amp;portrait=0" width="500" height="281" frameborder="0"></iframe>
 
-          <ul id="shots">
-            <li><a target="_blank" href="screenshots/tab1.png" title="Основная вкладка"><img src="screenshots/tab1-sq.png" alt="screenshot"/></a></li>
-            <li><a target="_blank" href="screenshots/tab2.png" title="Вкладка с новостями"><img src="screenshots/tab2-sq.png" alt="screenshot"/></a></li>
-            <li><a target="_blank" href="screenshots/tab3.png" title="Вкладка с подкастами"><img src="screenshots/tab3-sq.png" alt="screenshot"/></a></li>
-            <li><a target="_blank" href="screenshots/tab4.png" title="Вкладка с настройками"><img src="screenshots/tab3-sq.png" alt="screenshot"/></a></li>
-          </ul>
+          <div class="shot">
+            <img src="screenshots/sm_player.png" alt="player"/>
+            <p><strong>Встроенный проигрыватель</strong> позволяет подключиться к «Тоже мне радио» одним нажатием на кнопку.  При уменьшении громкости до нуля проигрывание останавливается, чтобы не расходовать зря трафик; при увеличении громкости проигрывание запускается снова.  Громкость можно регулировать прокруткой колеса над иконкой проигрывателя в области уведомлений.</p>
+            <p>Кнопки для <strong><a href="http://www.tmradio.net/voting/">голосования за или против</a></strong> того, что сейчас играет, позволяют слушателям влиять на плейлист станции.  Музыка с хорошими отзывами звучит чаще, плохая музыка удаляется из ротации.</p>
+          </div>
+
+          <div class="shot">
+            <img src="screenshots/sm_chat.png" alt="chat"/>
+            <p><strong>Встроенный <a href="http://www.tmradio.net/chat.html">чат</a></strong> позволяет общаться с другими слушателями, а во время <a href="http://www.tmradio.net/live/">прямых эфиров</a> — с ведущими.  Если в чате к вам обратятся, приложение подскажет об этом всплывающим сообщением и выделит обращение красным цветом.</p>
+            <p>История чата сохраняется в текстовом файле, доступ к которому возможен через главное меню приложения.</p>
+          </div>
+
+          <div class="shot">
+            <img src="screenshots/sm_news.png" alt="news"/>
+            <p><strong>Новости радиостанции</strong> информируют о жизни радиостанции.  К ним добавляются отправляемые слушателями в твиттер <a href="http://twitter.com/#!/search/%23tmradio">сообщения с тегом #tmradio</a>, что позволяет быть в курсе происходящего даже когда у радиостанции серьёзные технические проблемы.</p>
+          </div>
+
+          <div class="shot">
+            <img src="screenshots/sm_recordings.png" alt="recordings"/>
+            <p><strong>Архив записей</strong> <a href="http://www.tmradio.net/live/">прямых эфиров</a> и эксклюзивного материала, <a href="http://www.tmradio.net/programs/mcast/">присылаемого пользователями</a>, позволяет быстро найти прошедшую программу, не тратя время на поиск по сайту.  (Этот материал удобнее всего получать по подписке, в виде <a href="http://www.tmradio.net/podcast/">подкаста</a>.)</p>
+          </div>
+
+          <div class="shot">
+            <img src="screenshots/sm_properties.png" alt="track properties"/>
+            <p><strong>Редактирование свойств песен</strong> облегчает работу администраторов по поддержанию порядка.  Можно корректировать ошибки (что актуально, если музыка добавляется в автоматическом режиме), перемещать композиции между плейлистами.  Функция доступна как администраторам, так и пользователям с хорошей кармой — доступом управляет робот.</p>
+          </div>
+
+          <div class="shot">
+            <img src="screenshots/sm_preferences.png" alt="preferences"/>
+            <p>Почти все <strong>параметры приложения</strong> настраиваются.  При желании вы можете настроить его на другую станцию, другой чат, другого робота и вообще использовать его вместе со своей собственной радиостанцией.  Мы не против, и даже будем рады, если вы <a href="http://www.tmradio.net/feedback.html">расскажете нам</a> о своих успехах, в лучших традициях идеологии открытого исходного кода.</p>
+          </div>
         </div>
 
         <div id="text">
           <div id="about">
+            <!--
             <h2>Основные функции</h2>
             <ul>
               <li>Простой проигрыватель</li>
@@ -50,6 +79,7 @@
               <li>Быстрый доступ к <a href="http://www.tmradio.net/podcast/">подкастам</a> и записям эфиров</li>
               <li>Вывод информации при смене дорожки</li>
             </ul>
+            -->
 
             <h2>Скачать и установить</h2>
             <ul>
@@ -68,8 +98,8 @@
             <hr/>
             <iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fwww.facebook.com%2Ftmradio&amp;layout=button_count&amp;show_faces=false&amp;width=150&amp;action=like&amp;colorscheme=light&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:150px; height:21px;" allowTransparency="true"></iframe>
             <iframe src="http://api.flattr.com/button/view/?url=http%3A%2F%2Fapp.tmradio.net%2F&amp;button=compact" class="FlattrButton" width="110" height="20" frameborder="0" scrolling="no" border="0" marginheight="0" marginwidth="0" allowtransparency="true"></iframe>
-          </div>
-        </div>
+          </div><!-- #about -->
+        </div><!-- #text -->
       </div>
     </div>
   </body>
