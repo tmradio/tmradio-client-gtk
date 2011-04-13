@@ -184,7 +184,18 @@ class Jabber:
                 return
             if text.startswith('{'):
                 data = json.loads(text)
-                keys = { 'vote': 'track_vote', 'editable': 'track_editable', 'length': 'track_length', 'last_played': 'track_started_on', 'labels': 'track_labels', 'artist': 'track_artist', 'title': 'track_title', 'id': 'track_id' }
+                keys = {
+                    'artist': 'track_artist',
+                    'count': 'track_playcount',
+                    'editable': 'track_editable',
+                    'id': 'track_id',
+                    'labels': 'track_labels',
+                    'last_played': 'track_started_on',
+                    'length': 'track_length',
+                    'title': 'track_title',
+                    'vote': 'track_vote',
+                    'weight': 'track_weight',
+                    }
                 replies = []
                 for key in data:
                     value = data[key]
