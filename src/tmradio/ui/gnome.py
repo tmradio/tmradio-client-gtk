@@ -506,7 +506,6 @@ class MainWindow(BaseWindow):
                     self.is_online = False
                 elif reply[0] == 'chat':
                     self.is_online = True
-                    tmradio.log.debug(reply)
                     offline = len(reply) > 3 and reply[3]
                     timestamp = offline and reply[3] or time.time()
                     self.add_chat(reply[1], reply[2], timestamp, offline)
