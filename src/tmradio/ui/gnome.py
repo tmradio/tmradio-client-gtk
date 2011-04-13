@@ -32,6 +32,9 @@ shutting_down = False
 # Set when the main window is visible.
 main_window_visible = True
 
+# Notification title. FIXME: globals suck.
+notification_title = None
+
 def is_url(text):
     parts = text.split(':')
     if not parts[0] in ('http', 'https', 'ftp', 'mailto'):
@@ -48,8 +51,9 @@ def notify(text):
     config options, some defaults are applies.  Messages are logged."""
     tmradio.log.debug(u'Notification: ' + text)
     if HAVE_NOTIFY and not main_window_visible:
+        global notification_title
         config = tmradio.config.Open()
-        n = pynotify.Notification(config.get('notify_title', 'TMRadio Client'), text, config.get('notify_icon', 'audio-volume-medium'))
+        n = pynotify.Notification(config.get('notify_title', notification_title or 'TMRadio Client'), text, config.get('notify_icon', 'audio-volume-medium'))
         n.set_urgency(pynotify.URGENCY_LOW)
         n.show()
 
@@ -589,7 +593,8 @@ class MainWindow(BaseWindow):
         elif key == 'track_editable':
             self.track_editable = value
         elif key == 'track_listeners':
-            title = 'tmradio.net (%u)' % value
+            global notification_title
+            notification_title = title = 'tmradio.net (%u)' % value
             self.window.set_title(title)
             self.builder.get_object('tray').set_tooltip(title)
         elif key == 'track_weight':
