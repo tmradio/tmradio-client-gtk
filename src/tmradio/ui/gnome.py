@@ -112,7 +112,8 @@ class MessageTextView(gtk.TextView):
 
         expr = config.get('highlight_re')
         if expr is None:
-            expr = config.get_jabber_id() + u'|' + config.get_jabber_chat_nick()
+            try: expr = config.get_jabber_id() + u'|' + config.get_jabber_chat_nick()
+            except: return None
 
         return re.compile(expr)
 
@@ -198,7 +199,7 @@ class MessageTextView(gtk.TextView):
                 t.connect('event', self.on_link_event, word)
                 tb.insert_with_tags(eob, word, t)
                 self.url_tags.append(t)
-            elif self.highlight_re.search(word) is not None:
+            elif self.highlight_re is not None and self.highlight_re.search(word) is not None:
                 t = tb.create_tag()
                 config = tmradio.config.Open()
                 t.set_property('foreground', config.get('highlight_color', 'red'))
@@ -210,7 +211,7 @@ class MessageTextView(gtk.TextView):
             else:
                 tb.insert(eob, word)
 
-        if not notifyUser and self.highlight_re.search(text):
+        if not notifyUser and self.highlight_re is not None and self.highlight_re.search(text):
             notifyUser = True
 
         if notifyUser:
