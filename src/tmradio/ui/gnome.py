@@ -599,7 +599,7 @@ class MainWindow(BaseWindow):
         else:
             tmradio.log.debug(u'Unhandled property: ' + str(reply))
 
-        if key in ('track_title', 'track_artist', 'track_length'):
+        if key in ('track_title', 'track_artist', 'track_length', 'track_weight'):
             text = u'%s — %s' % (self.track_artist, self.track_title)
             if self.track_length:
                 text += u' [%u:%02u]' % (self.track_length / 60, self.track_length % 60)
@@ -632,6 +632,7 @@ class MainWindow(BaseWindow):
                 self.track_vote = vote
                 cmd = vote > 0 and 'rocks' or 'sucks'
                 self.jabber.post_message('%u %s' % (self.track_id, cmd))
+                self.jabber.post_message('dump %u' % self.track_id)
         self.update_buttons()
 
     def update_buttons(self):

@@ -15,6 +15,7 @@ Version 0.13
 - Track weight is shown in the progress bar.
 - Notify the user when he's mentioned in the chat.
 - Clicking the tray icon raises the window is it was not visible.
+- Track weight is displayed in the progress bar.
 
 
 Version 0.12
