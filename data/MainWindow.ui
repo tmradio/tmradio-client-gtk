@@ -40,6 +40,13 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkImageMenuItem" id="menu_chat_log">
+                        <property name="label" translatable="yes">Open chat log</property>
+                        <property name="visible">True</property>
+                        <signal name="activate" handler="on_menu_chat_log_activate"/>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
                         <property name="visible">True</property>
                       </object>

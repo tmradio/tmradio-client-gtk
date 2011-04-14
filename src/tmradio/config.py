@@ -30,6 +30,12 @@ class YamlConfig:
             return self.data[key]
         return default
 
+    def getpath(self, key, default=None):
+        value = self.get(key, default)
+        if value is not None:
+            value = os.path.expanduser(value)
+        return value
+
     def get_volume(self):
         return float(self.get('volume', 0.75))
 
@@ -37,10 +43,10 @@ class YamlConfig:
         self.data['volume'] = float(value)
 
     def get_log(self):
-        return self.get('log', '~/tmradio-client.log')
+        return self.getpath('log', '~/tmradio-client.log')
 
     def get_chat_log(self):
-        return self.get('chat_log', '~/tmradio-chat.log')
+        return self.getpath('chat_log', '~/tmradio-chat.log')
 
     def get_jabber_id(self):
         return self.get('jabber_id')

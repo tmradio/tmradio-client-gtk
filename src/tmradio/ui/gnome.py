@@ -3,6 +3,7 @@
 import datetime
 import os
 import re
+import subprocess
 import time
 import urllib
 import webbrowser
@@ -746,6 +747,9 @@ class MainWindow(BaseWindow):
 
     def on_menu_bugs_activate(self, *args):
         webbrowser.open('https://github.com/tmradio/tmradio-client-gtk/issues')
+
+    def on_menu_chat_log_activate(self, *args):
+        subprocess.Popen([ 'xdg-open', self.config.get_chat_log() ]).wait()
 
     def on_chat_entered(self):
         self.builder.get_object('chatmsg').grab_focus()
