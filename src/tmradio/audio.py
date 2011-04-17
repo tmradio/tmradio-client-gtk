@@ -127,11 +127,15 @@ class GstClient(DummyClient):
 
     def set_volume(self, level):
         tmradio.log.debug('set_volume(%s)' % level)
+        old_level = self.volume
         self.volume = level
         if self.volume_ctl:
             self.volume_ctl.set_property('volume', level)
 
-        self.volume_check_ts = time.time() + self.volume_check_delay
+        if old_level == 0 and level > 0:
+            self.volume_check_ts = time.time()
+        else:
+            self.volume_check_ts = time.time() + self.volume_check_delay
 
         config = tmradio.config.Open()
         config.set_volume(self.volume)
