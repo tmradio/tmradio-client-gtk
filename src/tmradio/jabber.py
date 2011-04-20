@@ -41,7 +41,7 @@ class Jabber:
         # Incoming commands, accessible via get_messages().
         self.in_queue = Queue.Queue()
         # RegExp for parsing the status line
-        self.np_re = re.compile(u'^«(.+)» by (.+) — #(\d+) ♺(\d+) ⚖(\S+) Σ(\d+)[^@]+(.+)$')
+        self.np_re = re.compile(u'^«(.+)» by (.+) — #(\d+) ♺(\d+) ⚖(\S+) Σ(\d+)')
         # RegExp for parsing the SHOW command (extracts pro/con lists only).
         self.show_re = re.compile(u'.* #(\d+).*length=(\d+)s.*editable=(True|False).*last_played=(\d+).* Pro: (.+), contra: (.+)\.$')
         # Status.
@@ -247,15 +247,13 @@ class Jabber:
 
         match = self.np_re.match(msg.getStatus() or '')
         if match:
-            title, artist, track_id, count, weight, listeners, tags = match.groups()
-            tags = [x for x in re.split('[,@ ]', tags) if x]
+            title, artist, track_id, count, weight, listeners = match.groups()
             self.post_replies([
                 ('set', 'track_id', track_id),
                 ('set', 'track_artist', artist),
                 ('set', 'track_title', title),
                 ('set', 'track_playcount', count),
                 ('set', 'track_weight', weight),
-                #('set', 'track_labels', tags),
                 ('set', 'track_listeners', int(listeners)),
             ])
             # Status changed because somebody added labels or voted.  Our
