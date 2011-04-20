@@ -16,6 +16,7 @@ Version 0.13
 - Notify the user when he's mentioned in the chat.
 - Clicking the tray icon raises the window is it was not visible.
 - Track weight is displayed in the progress bar.
+- Labels are no longer takes from the jabber bot's status.
 
 
 Version 0.12

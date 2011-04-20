@@ -418,7 +418,7 @@ class MainWindow(BaseWindow):
     def set_track_info(self, artist, title, track_id, count, weight, tags, full_update):
         self.builder.get_object('track_artist').set_text(artist)
         self.builder.get_object('track_title').set_text(title)
-        self.builder.get_object('track_labels').set_text(u' '.join(tags))
+        self.builder.get_object('track_labels').set_text(u' '.join(tags or []))
         if full_update:
             message = u'"%s" by %s' % (title, artist)
             if self.track_vote > 0:
