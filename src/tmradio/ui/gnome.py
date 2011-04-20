@@ -638,7 +638,7 @@ class MainWindow(BaseWindow):
             if self.track_vote != vote:
                 self.track_vote = vote
                 cmd = vote > 0 and 'rocks' or 'sucks'
-                self.jabber.post_message('%u %s' % (self.track_id, cmd))
+                self.jabber.post_message('%s %u' % (cmd, self.track_id))
                 self.jabber.post_message('dump %u' % self.track_id)
         self.update_buttons()
 
