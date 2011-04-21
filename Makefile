@@ -23,7 +23,7 @@ run:
 	./bin/tmradio-client 2>&1 | tee client.log
 
 test:
-	./bin/tmradio-client --debug 2>&1 | tee client.log
+	./bin/tmradio-client 2>&1 | tee client.log
 
 clean:
 	rm -f *.zip *.deb *.tar.gz src/tmradio/*.pyc src/tmradio/ui/*.pyc
