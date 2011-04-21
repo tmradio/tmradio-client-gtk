@@ -323,7 +323,7 @@ class MainWindow(BaseWindow):
         super(MainWindow, self).__init__()
         self.version = version
         self.config = tmradio.config.Open()
-        self.jabber = tmradio.jabber.Open(self, use_threading=USE_THREADING, version=self.version)
+        self.jabber = tmradio.jabber.Open()
         self.twitter = tmradio.feed.Twitter(self.config)
         self.podcast = tmradio.feed.Podcast(self.config)
         self.is_in_chat = False
@@ -665,13 +665,7 @@ class MainWindow(BaseWindow):
         self.builder.get_object('play').set_sensitive(self.player.can_play())
 
     def on_chatmsg_activate(self, field):
-        if self.jabber:
-            text = field.get_text()
-            chat = not text.startswith('/')
-            if not chat:
-                text = text[1:]
-            field.set_text('')
-            self.jabber.post_message(text, chat=chat)
+        self.jabber.send_chat_message(field.get_text())
 
     def on_update_clicked(self, button):
         if not self.jabber:

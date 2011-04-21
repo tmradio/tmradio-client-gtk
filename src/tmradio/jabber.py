@@ -14,7 +14,9 @@ import urlparse
 import xmpp
 import Queue
 
+import tmradio
 import tmradio.log
+import tmradio.config
 
 class Jabber:
     """Simple jabber client.
@@ -27,15 +29,20 @@ class Jabber:
     PING_FREQUENCY = 60 # seconds
     PING_TIMEOUT = 5 # seconds
 
-    def __init__(self, gui, use_threading=False, version='unknown'):
-        self.version = version
-        self.gui = gui
-        self.config = gui.config
+    def __init__(self):
+        self.config = tmradio.config.Open()
         self.jid = None
         self.cli = None
         self.roster = None
         self.bot_jid = None
         self.chat_jid = None
+        # Event handlers, should be reset externally.
+        self.on_chat_message = None
+        self.on_disconnected = None
+        self.on_self_joined = None
+        self.on_self_parted = None
+        self.on_user_joined = None
+        self.on_user_parted = None
         # Outgoing commands, added via post_message().
         self.out_queue = Queue.Queue()
         # Incoming commands, accessible via get_messages().
@@ -52,10 +59,13 @@ class Jabber:
         self.reconnect_time = 0
         self.last_ping_ts = 0
 
-        if use_threading:
+        if self.config.get('use_threading', False):
             self.worker = threading.Thread()
             self.worker.run = self._thread_worker
             self.worker.start()
+
+    def get_own_nickname(self):
+        return self.chat_my_name
 
     def post_message(self, text, chat=False, special=False):
         """Send a message.
@@ -66,6 +76,48 @@ class Jabber:
         be one of: connect, disconnect, join, leave.
         """
         self.out_queue.put((text, chat, special))
+
+    def connect(self):
+        """Starts connecting to the server."""
+        self.post_message('connect', special=True)
+
+    def send_chat_message(self, message):
+        """Sends a message to the chat room.  Messages prefixed with
+        a slash are sent to the radio bot directly."""
+        if message.startswith('/'):
+            self.post_message(message[1:], False)
+        else:
+            self.post_message(message, True)
+
+    def on_idle(self):
+        """Delivers messages to the GUI using callbacks."""
+        self.process_queue(0)
+
+        for replies in self.fetch_replies():
+            if type(replies) != list:
+                replies = [replies]
+            for reply in replies:
+                if 'join' == reply[0] and self.on_user_joined:
+                    self.on_user_joined(reply[1])
+                elif 'part' == reply[0] and self.on_user_parted:
+                    self.on_user_parted(reply[1])
+                elif 'disconnected' == reply[0] and self.on_disconnected:
+                    self.on_disconnected()
+                elif 'chat' == reply[0] and self.on_chat_message:
+                    self.on_chat_message(reply[1], reply[2])
+                elif 'joined' == reply[0] and self.on_self_joined:
+                    self.on_self_joined()
+                elif 'parted' == reply[0] and self.on_self_parted:
+                    self.on_self_parted()
+                elif 'offline' == reply[0] and self.on_disconnected:
+                    self.on_disconnected()
+                else:
+                    print 'Unhandled jabber message:', str(reply)
+
+    def send_rocks(self, track_id=None):
+        pass
+
+    # --- local commands ---
 
     def post_replies(self, replies):
         self.in_queue.put(replies)
@@ -134,7 +186,7 @@ class Jabber:
                 know = True
         if not know:
             self._log('need to make friends with %s' % self.bot_jid)
-            msg = xmpp.Presence(to=self.bot_jid, typ='subscribe', status=u'Hello, I\'m using tmradio-client/' + self.version)
+            msg = xmpp.Presence(to=self.bot_jid, typ='subscribe', status=u'Hello, I\'m using tmradio-client/' + tmradio.version)
             self.cli.send(msg)
 
     def _join_chat_room(self, suffix=None):
@@ -353,5 +405,5 @@ class Jabber:
         self.post_replies([('left', ), ('disconnected', )])
         self.reconnect_time = int(time.time()) + 5
 
-def Open(gui, use_threading=False, version=None):
-    return Jabber(gui, use_threading, version=version)
+def Open():
+    return Jabber()

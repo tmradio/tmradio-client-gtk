@@ -11,18 +11,22 @@ try:
 except:
     HAVE_GSTREAMER=False
 
+import tmradio
 import tmradio.config
 import tmradio.log
 
 
 class DummyClient:
+    def __init__(self):
+        pass
+
     def on_idle(self):
         pass
 
     def stop(self):
         pass
 
-    def play(self, url, volume):
+    def play(self, url=None, volume=None):
         pass
 
     def set_volume(self, volume):
@@ -42,17 +46,16 @@ class GstClient(DummyClient):
     """Interaction with Gstreamer."""
     volume_check_delay = 2 # seconds
 
-    def __init__(self, on_track_change=None, config=None, version='unknown', on_start=None, on_stop=None):
+    def __init__(self, on_track_change=None, on_start=None, on_stop=None):
         """Initializes the player.
 
         on_track_change is called when stream metadata updates and receives the
         new stream title as the only parameter.
         """
-        self.version = version
-        self.config = config
+        self.config = tmradio.config.Open()
         self.pipeline = None
         self.stream_uri = None
-        self.volume = config.get_volume()
+        self.volume = self.config.get_volume()
         self.volume_ctl = None
         self.volume_check_ts = None
         self.on_track_change = on_track_change
@@ -74,10 +77,12 @@ class GstClient(DummyClient):
                 tmradio.log.debug('Stopping player: zero volume.')
                 self.stop()
 
-    def play(self, uri, volume=None):
-        tmradio.log.debug('gst: starting %s' % uri)
-        if volume:
+    def play(self, uri=None, volume=None):
+        if uri is None:
+            uri = self.config.get_stream_uri()
+        if volume is not None:
             self.volume = volume
+        tmradio.log.debug('gst: starting %s' % uri)
         self.restart_ts = None
         self.pipeline = self.get_pipeline(uri)
         self.volume_ctl.set_property('volume', self.volume)
@@ -100,7 +105,7 @@ class GstClient(DummyClient):
 
     def get_pipeline(self, uri):
         pl = gst.Pipeline('pipeline')
-        agent = 'tmradio-client/%s; %s (%s)' % (self.version, os.name, self.config.get_jabber_chat_nick(guess=True))
+        agent = 'tmradio-client/%s; %s (%s)' % (tmradio.version, os.name, self.config.get_jabber_chat_nick(guess=True))
         tmp = gst.parse_launch('souphttpsrc location="%s" user-agent="%s" ! decodebin ! volume ! autoaudiosink' % (uri, agent))
         self.volume_ctl = list(tmp.elements())[1]
         pl.add(tmp)
