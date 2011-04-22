@@ -187,7 +187,7 @@ class Toolbar(tk.Frame):
             self.btn_skip.config(state=tk.DISABLED)
 
         jabber_state = tk.DISABLED
-        if self.jabber is not None:
+        if self.jabber is not None and self.jabber.is_connected():
             jabber_state = tk.NORMAL
         self.btn_rocks.config(state=jabber_state)
         self.btn_sucks.config(state=jabber_state)
