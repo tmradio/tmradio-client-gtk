@@ -42,7 +42,7 @@ class NickList(VScrollControl):
     """
     def __init__(self, master):
         """Initializes with no data."""
-        VScrollControl.__init__(self, master, lambda p: tk.Listbox(p, bd=2))
+        VScrollControl.__init__(self, master, lambda p: tk.Listbox(p, highlightthickness=0, bd=2))
 
         #self.ctl.bind('<ButtonRelease-1>', self.on_click)
         #self.ctl.bind('<Double-Button-1>', self.on_double_click)
