@@ -50,6 +50,7 @@ class Jabber:
         self.in_queue = Queue.Queue()
         # RegExp for parsing the status line
         self.np_re = re.compile(u'^«(.+)» by (.+) — #(\d+) ♺(\d+) ⚖(\S+) Σ(\d+)')
+        self.skip_re = re.compile('OK,|Request sent')
         # RegExp for parsing the SHOW command (extracts pro/con lists only).
         self.show_re = re.compile(u'.* #(\d+).*length=(\d+)s.*editable=(True|False).*last_played=(\d+).* Pro: (.+), contra: (.+)\.$')
         # Status.
@@ -258,6 +259,10 @@ class Jabber:
                 self.set_track_info(json.loads(text))
                 self.post_replies(('track_info', self.track_info))
                 return
+            elif not self.skip_re.match(text):
+                self.post_replies([
+                    ('chat', text, '-bot-', self._get_msg_ts(msg)),
+                ])
         # self._log('unhandled message: %s' % msg.getBody())
 
     def _get_msg_ts(self, msg):
