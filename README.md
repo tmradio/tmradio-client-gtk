@@ -14,6 +14,7 @@
 
 - hakimovis@gmail.com (Хакимов Ирик): за патчи
 - iconshock.com: за иконку
+- defaulticon.com (Interactivemania): за иконки для интерфейса на Tk.
 
 
 Интерфейс
