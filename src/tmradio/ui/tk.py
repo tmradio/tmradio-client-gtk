@@ -149,17 +149,22 @@ class Toolbar(tk.Frame):
         self.jabber = None
         self.track_info = {}
 
-        self.btn_play = tk.Button(self, text=">", command=self.on_play_clicked)
+        self.ico_play = tk.PhotoImage(file='data/icon-play.gif')
+        self.ico_pause = tk.PhotoImage(file='data/icon-pause.gif')
+        self.ico_skip = tk.PhotoImage(file='data/icon-skip.gif')
+        self.ico_rocks = tk.PhotoImage(file='data/icon-rocks.gif')
+        self.ico_sucks = tk.PhotoImage(file='data/icon-sucks.gif')
+
+        self.btn_play = tk.Button(self, image=self.ico_play, width=24, height=24, command=self.on_play_clicked)
         self.btn_play.pack(side=tk.LEFT, padx=2, pady=2)
 
-        self.btn_skip = tk.Button(self, text=u">>", command=self.on_skip_clicked)
+        self.btn_skip = tk.Button(self, image=self.ico_skip, width=24, height=24, command=self.on_skip_clicked)
         self.btn_skip.pack(side=tk.LEFT, padx=2, pady=2)
 
-        self.ico_rocks = tk.PhotoImage(file='data/icon-play.gif')
-        self.btn_rocks = tk.Button(self, text=u"rocks", image=self.ico_rocks, command=self.on_rocks_clicked)
+        self.btn_rocks = tk.Button(self, image=self.ico_rocks, width=24, height=24, command=self.on_rocks_clicked)
         self.btn_rocks.pack(side=tk.LEFT, padx=2, pady=2)
 
-        self.btn_sucks = tk.Button(self, text=u"sucks", command=self.on_sucks_clicked)
+        self.btn_sucks = tk.Button(self, image=self.ico_sucks, width=24, height=24, command=self.on_sucks_clicked)
         self.btn_sucks.pack(side=tk.LEFT, padx=2, pady=2)
 
         self.name = tk.Label(self, text='Updating, please wait...')
@@ -175,10 +180,10 @@ class Toolbar(tk.Frame):
         when not playing.
         """
         if self.audio.is_playing():
-            self.btn_play.config(text='||')
+            self.btn_play.config(image=self.ico_pause)
             self.btn_skip.config(state=tk.NORMAL)
         else:
-            self.btn_play.config(text='>')
+            self.btn_play.config(image=self.ico_play)
             self.btn_skip.config(state=tk.DISABLED)
 
         jabber_state = tk.DISABLED
