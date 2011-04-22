@@ -155,7 +155,8 @@ class Toolbar(tk.Frame):
         self.btn_skip = tk.Button(self, text=u">>", command=self.on_skip_clicked)
         self.btn_skip.pack(side=tk.LEFT, padx=2, pady=2)
 
-        self.btn_rocks = tk.Button(self, text=u"rocks", command=self.on_rocks_clicked)
+        self.ico_rocks = tk.PhotoImage(file='data/icon-play.gif')
+        self.btn_rocks = tk.Button(self, text=u"rocks", image=self.ico_rocks, command=self.on_rocks_clicked)
         self.btn_rocks.pack(side=tk.LEFT, padx=2, pady=2)
 
         self.btn_sucks = tk.Button(self, text=u"sucks", command=self.on_sucks_clicked)
