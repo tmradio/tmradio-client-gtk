@@ -93,13 +93,16 @@ class Jabber:
     def send_rocks(self, track_id):
         """Sends the bot a note that the user likes the specified track."""
         self.send_chat_message('/rocks %u' % track_id)
+        self.send_chat_message('/dump %u' % track_id)
 
     def send_sucks(self, track_id):
         """Sends the bot a note that the user hates the specified track."""
         self.send_chat_message('/sucks %u' % track_id)
+        self.send_chat_message('/dump %u' % track_id)
 
     def skip_track(self, track_id):
         self.send_chat_message('/skip %u' % track_id)
+        self.send_chat_message('/dump %u' % track_id)
 
     def on_idle(self):
         """Delivers messages to the GUI using callbacks."""
@@ -253,7 +256,7 @@ class Jabber:
                 return
             if text.startswith('{'):
                 self.set_track_info(json.loads(text))
-                self.post_replies((('track_info', self.track_info)))
+                self.post_replies(('track_info', self.track_info))
                 return
         # self._log('unhandled message: %s' % msg.getBody())
 
