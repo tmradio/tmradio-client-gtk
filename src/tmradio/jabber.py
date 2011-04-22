@@ -9,9 +9,11 @@ import os
 import Queue
 import random
 import re
+import socket
 import sys
 import threading
 import time
+import traceback
 import urlparse
 import xmpp
 
@@ -61,6 +63,9 @@ class Jabber:
         self.is_shutting_down = False
         self.reconnect_time = 0
         self.last_ping_ts = 0
+        self.worker = None
+
+        socket.setdefaulttimeout(self.config.get('socket_timeout', 2))
 
         if self.config.get('use_threading', True):
             self.worker = threading.Thread()
@@ -83,6 +88,10 @@ class Jabber:
     def connect(self):
         """Starts connecting to the server."""
         self.post_message('connect', special=True)
+
+    def shutdown(self):
+        """Instructs the client to die ASAP."""
+        self.is_shutting_down = True
 
     def send_chat_message(self, message):
         """Sends a message to the chat room.  Messages prefixed with
@@ -108,7 +117,8 @@ class Jabber:
 
     def on_idle(self):
         """Delivers messages to the GUI using callbacks."""
-        self.process_queue(0)
+        if self.worker is None:
+            self.process_queue(0)
 
         for replies in self.fetch_replies():
             if type(replies) != list:
@@ -167,8 +177,12 @@ class Jabber:
         else:
             cli = xmpp.Client(self.jid.getDomain(), debug=[])
 
-        res = cli.connect(proxy=self._get_proxy_settings())
-        if not res:
+        try:
+            res = cli.connect(proxy=self._get_proxy_settings())
+            if not res:
+                self._log('could not connect to %s.' % self.jid.getDomain())
+                return False
+        except Exception, e:
             self._log('could not connect to %s.' % self.jid.getDomain())
             return False
 
@@ -328,8 +342,13 @@ class Jabber:
             self._join_chat_room(suffix=' (%R)')
 
     def _thread_worker(self):
+        print 'Jabber thread started.'
         while not self.is_shutting_down:
-            self.process_queue(1)
+            try:
+                self.process_queue(0)
+            except Exception, e:
+                print 'JABBER thread exception', e, traceback.format_exc(e)
+        print 'Jabber thread ended.'
 
     def process_queue(self, timeout=0):
         if self.cli:
@@ -365,8 +384,6 @@ class Jabber:
         return True
 
     def _process_message(self, text, chat=False, special=False):
-        self._log('processing message: text="%s" chat=%s special=%s' % (text, chat, special))
-
         if special:
             if text == 'connect':
                 if not self.cli:
