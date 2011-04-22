@@ -206,7 +206,7 @@ class ChatEntry(tk.Entry):
     """
     def __init__(self, master, **kwargs):
         """Initializes the control."""
-        tk.Entry.__init__(self, state='readonly', **kwargs)
+        tk.Entry.__init__(self, state='readonly', highlightthickness=0, **kwargs)
         self.bind('<Return>', self.on_enter)
         self.on_message = None
 
@@ -255,6 +255,7 @@ class MainWindow(tk.Tk):
         self.setup_real()
 
     def setup_real(self):
+        """Connects the UI to the jabber client."""
         self.jabber = tmradio.jabber.Open()
         self.toolbar.jabber = self.jabber
 
@@ -265,12 +266,8 @@ class MainWindow(tk.Tk):
         self.jabber.on_user_joined = self.on_user_joined
         self.jabber.on_user_parted = self.on_user_parted
         self.jabber.on_track_info = self.on_track_info
-        self.jabber.connect()
 
         self.entry.on_message = self.jabber.send_chat_message
-
-        #self.jabber.add_event('chat-join', self.on_user_joined) # somebody came in
-        #self.jabber.add_event('chat-part', self.on_chat_part) # somebody left
 
     def setup_test(self):
         """Fills the windows with test data.  Can be used for safe debugging
