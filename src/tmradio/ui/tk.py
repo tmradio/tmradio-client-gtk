@@ -320,9 +320,9 @@ class MainWindow(tk.Tk):
         """Called when it leaves the chat room."""
         self.entry.disable()
 
-    def on_chat_message(self, text, nick):
+    def on_chat_message(self, text, nick, ts):
         """Called when a messages is received in the chat room."""
-        self.chat_view.add_message(text, nick)
+        self.chat_view.add_message(text, nick, ts)
 
     def on_disconnected(self):
         """Called when the user is disconnected from the server."""

@@ -119,7 +119,7 @@ class Jabber:
                 elif 'disconnected' == reply[0] and self.on_disconnected:
                     self.on_disconnected()
                 elif 'chat' == reply[0] and self.on_chat_message:
-                    self.on_chat_message(reply[1], reply[2])
+                    self.on_chat_message(reply[1], reply[2], reply[3])
                 elif 'joined' == reply[0] and self.on_self_joined:
                     self.on_self_joined()
                 elif 'parted' == reply[0] and self.on_self_parted:
@@ -262,11 +262,9 @@ class Jabber:
 
     def _get_msg_ts(self, msg):
         delay = msg.getTag('delay')
-        if not delay:
-            return None
-        if not 'stamp' in delay.attrs:
-            return None
-        return time.mktime(time.strptime(delay.attrs['stamp'][:19], '%Y-%m-%dT%H:%M:%S'))
+        if not delay or not 'stamp' in delay.attrs:
+            return int(time.time())
+        return int(time.mktime(time.strptime(delay.attrs['stamp'][:19], '%Y-%m-%dT%H:%M:%S')))
 
     def _on_presence(self, conn, msg):
         """Process incoming presences."""
@@ -318,7 +316,7 @@ class Jabber:
         er = msg.getTag('error')
         if er and er.attrs['code'] == '409':
             self.post_replies([
-                ('chat', er.getTag('text').getCDATA(), sender.getResource()),
+                ('chat', er.getTag('text').getCDATA(), sender.getResource(), int(time.time())),
             ])
             self.chat_my_name = None
             self._join_chat_room(suffix=' (%R)')
