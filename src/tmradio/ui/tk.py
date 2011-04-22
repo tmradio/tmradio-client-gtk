@@ -225,6 +225,9 @@ class MainWindow(tk.Tk):
 
         self.toolbar = Toolbar(self, audio=self.audio)
 
+        self.entry = ChatEntry(self)
+        self.entry.pack(side=tk.BOTTOM, fill=tk.X)
+
         self.panes = tk.PanedWindow(self, orient=tk.HORIZONTAL, bd=4)
         self.panes.pack(fill=tk.BOTH, expand=tk.YES)
 
@@ -240,9 +243,6 @@ class MainWindow(tk.Tk):
         self.status = tk.Label(self, text='This is a status bar.', bd=1, relief=tk.SUNKEN, anchor=tk.W)
         self.status.pack(side=tk.BOTTOM, fill=tk.X)
         """
-
-        self.entry = ChatEntry(self)
-        self.entry.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.after(100, self.on_idle)
         self.title('TMRadio Client')
