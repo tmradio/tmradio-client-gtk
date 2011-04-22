@@ -6,13 +6,14 @@ warnings.filterwarnings("ignore")
 
 import json
 import os
+import Queue
 import random
 import re
 import sys
+import threading
 import time
 import urlparse
 import xmpp
-import Queue
 
 import tmradio
 import tmradio.log
@@ -61,7 +62,7 @@ class Jabber:
         self.reconnect_time = 0
         self.last_ping_ts = 0
 
-        if self.config.get('use_threading', False):
+        if self.config.get('use_threading', True):
             self.worker = threading.Thread()
             self.worker.run = self._thread_worker
             self.worker.start()
