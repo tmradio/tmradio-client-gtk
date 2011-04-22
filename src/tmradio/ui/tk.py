@@ -7,6 +7,7 @@ TODO:
 """
 
 import time
+import webbrowser
 
 import tkFont
 import Tkinter as tk
@@ -83,6 +84,11 @@ class ChatView(VScrollControl):
         font = tkFont.Font(family=font_family, size=font_size)
         self.ctl.tag_config('ts', font=font, foreground='gray')
 
+        self.ctl.tag_config('link', font=font, foreground='blue', underline=True)
+        self.ctl.tag_bind('link', '<Enter>', lambda e: self.ctl.config(cursor='hand2'))
+        self.ctl.tag_bind('link', '<Leave>', lambda e: self.ctl.config(cursor='arrow'))
+        self.ctl.tag_bind('link', '<Button-1>', self.on_link_clicked)
+
         font = tkFont.Font(family=font_family, weight='bold', size=font_size)
         self.ctl.tag_config('nick', font=font)
 
@@ -101,7 +107,29 @@ class ChatView(VScrollControl):
 
         self.ctl.insert(tk.END, ts_text + ' ', 'ts')
         self.ctl.insert(tk.END, nickname, 'nick')
-        self.ctl.insert(tk.END, u': ' + message.rstrip() + u'\n')
+        self.ctl.insert(tk.END, u': ')
+
+        prefix = u''
+        for word in message.rstrip().split(' '):
+            if prefix:
+                self.ctl.insert(tk.END, prefix)
+            if '://' in word:
+                tags = ('link', u'href:' + word)
+            else:
+                tags = None
+            self.ctl.insert(tk.END, word, tags)
+            prefix = u' '
+        self.ctl.insert(tk.END, '\n')
+
+    def on_link_clicked(self, event):
+        """Opens the clicked link.  This handler is called when the user clicks
+        some text displayed with the 'link' tag.  Such things also have a
+        special "href:..." tag, which is not defined, but carries the URL."""
+        w = event.widget
+        x, y = event.x, event.y
+        for tag in w.tag_names('@%d,%d' % (x, y)):
+            if tag.startswith('href:'):
+                webbrowser.open(tag[5:])
 
 
 class Toolbar(tk.Frame):
