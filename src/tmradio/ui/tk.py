@@ -3,7 +3,6 @@
 """Tk interface for the tmradio client.
 
 TODO:
-- Set width of the nick list.
 - Put images on buttons.
 """
 
@@ -72,6 +71,7 @@ class ChatView(VScrollControl):
     hyperlinked.
     """
     def __init__(self, master):
+        """Initializes the control, fonts and tags."""
         VScrollControl.__init__(self, master, lambda p: tk.Text(p, bd=2, highlightthickness=0, state=tk.DISABLED))
 
         font_family = 'Ubuntu'
@@ -87,6 +87,13 @@ class ChatView(VScrollControl):
         self.ctl.tag_config('nick', font=font)
 
     def add_message(self, message, nickname, ts=None):
+        """Adds a message to the list.
+
+        Arguments:
+        message -- some text
+        nickname -- who sent it
+        ts -- an integer, when the message was sent
+        """
         ts = ts or int(time.time())
         ts_text = time.strftime('%d.%m %H:%M', time.localtime(ts))
 
@@ -107,6 +114,7 @@ class Toolbar(tk.Frame):
     audio -- the player, must conform to tmradio.audio
     """
     def __init__(self, master, audio):
+        """Initializes the control with some default buttons."""
         tk.Frame.__init__(self, master)
 
         self.audio = audio
@@ -164,20 +172,15 @@ class Toolbar(tk.Frame):
             self.btn_skip.config(state=tk.DISABLED)
 
     def set_track_info(self, ti):
+        """Must be called when track info changes.  Updates the buttons etc."""
         text = u'%s — %s ♺%u ⚖%.2f' % (ti.get('artist', 'unknown artist'), ti.get('title', 'untitled'), ti.get('count', 0), ti.get('weight', 1))
         self.name.config(text=text)
         print 'New track info:', self.track_info
         self.track_info = ti
         self.update_buttons()
 
-    def on_click(self, cmd, *args, **kwargs):
-        callback = getattr(self, cmd)
-        if not callback:
-            print 'WARNING: toolbar.%s not set.' % cmd
-        else:
-            callback()
-
     def on_play_clicked(self):
+        """Handles clicks on the play/pause button."""
         if self.audio.can_play():
             if self.audio.is_playing():
                 self.audio.stop()
@@ -186,12 +189,15 @@ class Toolbar(tk.Frame):
             self.update_buttons()
 
     def on_skip_clicked(self):
+        """Handles clicks on the skip button."""
         self.jabber.skip_track(self.track_info.get('id'))
 
     def on_rocks_clicked(self):
+        """Handles clicks on the rocks button."""
         self.jabber.send_rocks(self.track_info.get('id'))
 
     def on_sucks_clicked(self):
+        """Handles clicks on the sucks button."""
         self.jabber.send_sucks(self.track_info.get('id'))
 
 
@@ -211,19 +217,26 @@ class ChatEntry(tk.Entry):
         self.on_message = None
 
     def on_enter(self, event):
+        """Passes the contents to the `on_message' callback the cleans the
+        control up."""
         if self.on_message:
             self.on_message(self.get())
         self.delete(0, tk.END)
 
     def enable(self):
+        """Enables the control."""
         self.config(state=tk.NORMAL)
 
     def disable(self):
+        """Disables the control."""
         self.config(state='readonly')
 
 
 class MainWindow(tk.Tk):
+    """The main window, glues other controls together."""
     def __init__(self):
+        """Initializes and shows the window, sets up a timer to call on_idle().
+        Calls setup_real() to connect to jabber."""
         tk.Tk.__init__(self)
 
         self.jabber = None
@@ -292,29 +305,42 @@ class MainWindow(tk.Tk):
         self.after(100, self.on_idle)
 
     def on_user_joined(self, nickname):
+        """Called when somebody joins the chat room."""
         self.nick_list.add(nickname)
 
     def on_user_parted(self, nickname):
+        """Called when somebody leaves the chat room."""
         self.nick_list.remove(nickname)
 
     def on_self_joined(self):
+        """Called when it joins the chat room."""
         self.entry.enable()
 
     def on_self_parted(self):
+        """Called when it leaves the chat room."""
         self.entry.disable()
 
     def on_chat_message(self, text, nick):
+        """Called when a messages is received in the chat room."""
         self.chat_view.add_message(text, nick)
 
     def on_disconnected(self):
+        """Called when the user is disconnected from the server."""
         pass
 
     def on_track_info(self, ti):
+        """Called when the track ifnormation changes.
+
+        Arguments:
+        ti -- track properties, a dictionary.
+        """
         self.title('TMRadio Client (%u listeners)' % ti.get('listeners', 0))
         self.toolbar.set_track_info(ti)
 
     def show(self):
+        """Shows the window and runs the main loop."""
         tk.mainloop()
 
 def Run():
+    """Creates the main window, shows it and waits until it's closed."""
     MainWindow().show()
