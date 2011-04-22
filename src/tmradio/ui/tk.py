@@ -26,12 +26,14 @@ class VScrollControl(tk.Frame):
     def __init__(self, master, factory, **kwargs):
         tk.Frame.__init__(self, master, **kwargs)
 
+        self.scrollbar = tk.Scrollbar(self)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
         self.ctl = factory(self)
         self.ctl.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
 
-        self.scrollbar = tk.Scrollbar(self, command=self.ctl.yview)
+        self.scrollbar.config(command=self.ctl.yview)
         self.ctl['yscrollcommand'] = self.scrollbar.set
-        self.scrollbar.pack(side=tk.LEFT, fill=tk.Y)
 
 
 class NickList(VScrollControl):
@@ -202,9 +204,9 @@ class ChatEntry(tk.Entry):
         entry = ChatEntry(self)
         entry.on_message = lambda txt: xyz(txt)
     """
-    def __init__(self, master):
+    def __init__(self, master, **kwargs):
         """Initializes the control."""
-        tk.Entry.__init__(self)
+        tk.Entry.__init__(self, **kwargs)
         self.bind('<Return>', self.on_enter)
         self.on_message = None
 
@@ -223,7 +225,7 @@ class MainWindow(tk.Tk):
 
         self.toolbar = Toolbar(self, audio=self.audio)
 
-        self.panes = tk.PanedWindow(self, orient=tk.HORIZONTAL)
+        self.panes = tk.PanedWindow(self, orient=tk.HORIZONTAL, bd=4)
         self.panes.pack(fill=tk.BOTH, expand=tk.YES)
 
         self.chat_view = ChatView(self.panes)
