@@ -44,7 +44,6 @@ class NickList(VScrollControl):
         """Initializes with no data."""
         VScrollControl.__init__(self, master, lambda p: tk.Listbox(p, bd=2))
 
-        #self.ctl.pack(side=tk.LEFT, expand=tk.YES, fill=tk.BOTH)
         #self.ctl.bind('<ButtonRelease-1>', self.on_click)
         #self.ctl.bind('<Double-Button-1>', self.on_double_click)
 
@@ -55,8 +54,9 @@ class NickList(VScrollControl):
 
         TODO: sort alphabetically.
         """
-        self.data.append(nickname)
-        self.ctl.insert(tk.END, nickname)
+        if not nickname in self.data:
+            self.data.append(nickname)
+            self.ctl.insert(tk.END, nickname)
 
     def remove(self, nickname):
         pass # FIXME
@@ -164,7 +164,7 @@ class Toolbar(tk.Frame):
     def set_track_info(self, ti):
         text = u'%s — %s ♺%u ⚖%.2f' % (ti.get('artist', 'unknown artist'), ti.get('title', 'untitled'), ti.get('count', 0), ti.get('weight', 1))
         self.name.config(text=text)
-        #print 'New track info:', self.track_info
+        print 'New track info:', self.track_info
         self.track_info = ti
         self.update_buttons()
 
@@ -223,14 +223,21 @@ class MainWindow(tk.Tk):
 
         self.toolbar = Toolbar(self, audio=self.audio)
 
-        self.chat = tk.Frame(self)
-        self.chat.pack(expand=tk.YES)
+        self.panes = tk.PanedWindow(self, orient=tk.HORIZONTAL)
+        self.panes.pack(fill=tk.BOTH, expand=tk.YES)
 
-        self.chat_view = ChatView(self.chat)
+        self.chat_view = ChatView(self.panes)
         self.chat_view.pack(expand=tk.YES, fill=tk.BOTH, side=tk.LEFT)
+        self.panes.add(self.chat_view)
 
-        self.nick_list = NickList(self.chat)
-        self.nick_list.pack(expand=tk.YES, fill=tk.Y, side=tk.RIGHT, anchor=tk.E, ipady=4)
+        self.nick_list = NickList(self.panes)
+        self.nick_list.pack(expand=tk.YES, fill=tk.BOTH, side=tk.RIGHT, anchor=tk.E, ipady=4)
+        self.panes.add(self.nick_list)
+
+        """
+        self.status = tk.Label(self, text='This is a status bar.', bd=1, relief=tk.SUNKEN, anchor=tk.W)
+        self.status.pack(side=tk.BOTTOM, fill=tk.X)
+        """
 
         self.entry = ChatEntry(self)
         self.entry.pack(side=tk.BOTTOM, fill=tk.X)
