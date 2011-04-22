@@ -108,21 +108,23 @@ class Toolbar(tk.Frame):
         tk.Frame.__init__(self, master)
 
         self.audio = audio
-        self.on_skip = None
-        self.on_rocks = None
-        self.on_sucks = None
+        self.jabber = None
+        self.track_info = {}
 
-        self.btn_play = tk.Button(self, text=">", command=self.on_play)
+        self.btn_play = tk.Button(self, text=">", command=self.on_play_clicked)
         self.btn_play.pack(side=tk.LEFT, padx=2, pady=2)
 
-        self.btn_next = tk.Button(self, text=u">>", command=self.update_buttons)
-        self.btn_next.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_skip = tk.Button(self, text=u">>", command=self.on_skip_clicked)
+        self.btn_skip.pack(side=tk.LEFT, padx=2, pady=2)
 
-        b = tk.Button(self, text=u"rocks", command=lambda: self.on_click('on_rocks'))
-        b.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_rocks = tk.Button(self, text=u"rocks", command=self.on_rocks_clicked)
+        self.btn_rocks.pack(side=tk.LEFT, padx=2, pady=2)
 
-        b = tk.Button(self, text=u"sucks", command=lambda: self.on_click('on_sucks'))
-        b.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_sucks = tk.Button(self, text=u"sucks", command=self.on_sucks_clicked)
+        self.btn_sucks.pack(side=tk.LEFT, padx=2, pady=2)
+
+        self.name = tk.Label(self, text='Updating, please wait...')
+        self.name.pack(side=tk.LEFT, padx=2, pady=2)
 
         self.update_buttons()
         self.pack(side=tk.TOP, fill=tk.X)
@@ -135,10 +137,36 @@ class Toolbar(tk.Frame):
         """
         if self.audio.is_playing():
             self.btn_play.config(text='||')
-            self.btn_next.config(state=tk.NORMAL)
+            self.btn_skip.config(state=tk.NORMAL)
         else:
             self.btn_play.config(text='>')
-            self.btn_next.config(state=tk.DISABLED)
+            self.btn_skip.config(state=tk.DISABLED)
+
+        jabber_state = tk.DISABLED
+        if self.jabber is not None:
+            jabber_state = tk.NORMAL
+        self.btn_rocks.config(state=jabber_state)
+        self.btn_sucks.config(state=jabber_state)
+
+        vote = self.track_info.get('vote')
+        if vote == 1:
+            self.btn_rocks.config(default=tk.ACTIVE)
+            self.btn_sucks.config(default=tk.NORMAL)
+        elif vote == -1:
+            self.btn_rocks.config(default=tk.NORMAL)
+            self.btn_sucks.config(default=tk.ACTIVE)
+
+        if self.jabber is not None and self.track_info.get('editable'):
+            self.btn_skip.config(state=tk.NORMAL)
+        else:
+            self.btn_skip.config(state=tk.DISABLED)
+
+    def set_track_info(self, ti):
+        text = u'%s — %s ♺%u ⚖%.2f' % (ti.get('artist', 'unknown artist'), ti.get('title', 'untitled'), ti.get('count', 0), ti.get('weight', 1))
+        self.name.config(text=text)
+        #print 'New track info:', self.track_info
+        self.track_info = ti
+        self.update_buttons()
 
     def on_click(self, cmd, *args, **kwargs):
         callback = getattr(self, cmd)
@@ -147,13 +175,22 @@ class Toolbar(tk.Frame):
         else:
             callback()
 
-    def on_play(self):
+    def on_play_clicked(self):
         if self.audio.can_play():
             if self.audio.is_playing():
                 self.audio.stop()
             else:
                 self.audio.play()
             self.update_buttons()
+
+    def on_skip_clicked(self):
+        self.jabber.skip_track(self.track_info.get('id'))
+
+    def on_rocks_clicked(self):
+        self.jabber.send_rocks(self.track_info.get('id'))
+
+    def on_sucks_clicked(self):
+        self.jabber.send_sucks(self.track_info.get('id'))
 
 
 class ChatEntry(tk.Entry):
@@ -204,12 +241,15 @@ class MainWindow(tk.Tk):
 
     def setup_real(self):
         self.jabber = tmradio.jabber.Open()
+        self.toolbar.jabber = self.jabber
+
         self.jabber.on_chat_message = self.on_chat_message
         self.jabber.on_disconnected = self.on_disconnected
         self.jabber.on_self_joined = self.on_self_joined
         self.jabber.on_self_parted = self.on_self_parted
         self.jabber.on_user_joined = self.on_user_joined
         self.jabber.on_user_parted = self.on_user_parted
+        self.jabber.on_track_info = self.on_track_info
         self.jabber.connect()
 
         self.entry.on_message = self.jabber.send_chat_message
@@ -257,8 +297,12 @@ class MainWindow(tk.Tk):
     def on_disconnected(self):
         pass
 
+    def on_track_info(self, ti):
+        self.title('TMRadio Client (%u listeners)' % ti.get('listeners', 0))
+        self.toolbar.set_track_info(ti)
+
     def show(self):
         tk.mainloop()
 
-def Run(version):
+def Run():
     MainWindow().show()

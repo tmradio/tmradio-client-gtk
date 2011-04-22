@@ -41,6 +41,7 @@ class Jabber:
         self.on_disconnected = None
         self.on_self_joined = None
         self.on_self_parted = None
+        self.on_track_info = None
         self.on_user_joined = None
         self.on_user_parted = None
         # Outgoing commands, added via post_message().
@@ -52,7 +53,7 @@ class Jabber:
         # RegExp for parsing the SHOW command (extracts pro/con lists only).
         self.show_re = re.compile(u'.* #(\d+).*length=(\d+)s.*editable=(True|False).*last_played=(\d+).* Pro: (.+), contra: (.+)\.$')
         # Status.
-        self.last_track_id = None
+        self.track_info = {}
         self.chat_active = False
         self.chat_my_name = None
         self.is_shutting_down = False
@@ -89,6 +90,17 @@ class Jabber:
         else:
             self.post_message(message, True)
 
+    def send_rocks(self, track_id):
+        """Sends the bot a note that the user likes the specified track."""
+        self.send_chat_message('/rocks %u' % track_id)
+
+    def send_sucks(self, track_id):
+        """Sends the bot a note that the user hates the specified track."""
+        self.send_chat_message('/sucks %u' % track_id)
+
+    def skip_track(self, track_id):
+        self.send_chat_message('/skip %u' % track_id)
+
     def on_idle(self):
         """Delivers messages to the GUI using callbacks."""
         self.process_queue(0)
@@ -111,13 +123,18 @@ class Jabber:
                     self.on_self_parted()
                 elif 'offline' == reply[0] and self.on_disconnected:
                     self.on_disconnected()
+                elif 'track_info' == reply[0] and self.on_track_info:
+                    self.on_track_info(reply[1])
                 else:
                     print 'Unhandled jabber message:', str(reply)
 
-    def send_rocks(self, track_id=None):
-        pass
-
     # --- local commands ---
+
+    def set_track_info(self, ti):
+        old_id = self.track_info.get('id')
+        self.track_info.update(ti)
+        if old_id != self.track_info.get('id'):
+            self.send_chat_message('/dump %u' % self.track_info.get('id'))
 
     def post_replies(self, replies):
         self.in_queue.put(replies)
@@ -235,26 +252,8 @@ class Jabber:
                 self._log('empty message received: %s' % msg)
                 return
             if text.startswith('{'):
-                data = json.loads(text)
-                keys = {
-                    'artist': 'track_artist',
-                    'count': 'track_playcount',
-                    'editable': 'track_editable',
-                    'id': 'track_id',
-                    'labels': 'track_labels',
-                    'last_played': 'track_started_on',
-                    'length': 'track_length',
-                    'title': 'track_title',
-                    'vote': 'track_vote',
-                    'weight': 'track_weight',
-                    }
-                replies = []
-                for key in data:
-                    value = data[key]
-                    if key in keys:
-                        key = keys[key]
-                    replies.append(('set', key, value))
-                self.post_replies(replies)
+                self.set_track_info(json.loads(text))
+                self.post_replies((('track_info', self.track_info)))
                 return
         # self._log('unhandled message: %s' % msg.getBody())
 
@@ -300,19 +299,15 @@ class Jabber:
         match = self.np_re.match(msg.getStatus() or '')
         if match:
             title, artist, track_id, count, weight, listeners = match.groups()
-            self.post_replies([
-                ('set', 'track_id', track_id),
-                ('set', 'track_artist', artist),
-                ('set', 'track_title', title),
-                ('set', 'track_playcount', count),
-                ('set', 'track_weight', weight),
-                ('set', 'track_listeners', int(listeners)),
-            ])
-            # Status changed because somebody added labels or voted.  Our
-            # vote did not change, no need to request it.
-            if track_id != self.last_track_id:
-                self.post_message('dump ' + track_id)
-                self.last_track_id = track_id
+            self.set_track_info({
+                'id': int(track_id),
+                'artist': artist,
+                'title': title,
+                'count': int(count),
+                'weight': float(weight),
+                'listeners': int(listeners),
+            })
+            self.post_replies(('track_info', self.track_info))
         else:
             self._log('bot status not understood: %s' % msg.getStatus())
 
