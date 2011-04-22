@@ -372,7 +372,10 @@ class MainWindow(tk.Tk):
     def show(self):
         """Shows the window and runs the main loop."""
         tk.mainloop()
+        if self.jabber is not None:
+            self.jabber.shutdown()
 
 def Run():
     """Creates the main window, shows it and waits until it's closed."""
     MainWindow().show()
+    print 'Main Tk window closed.'
