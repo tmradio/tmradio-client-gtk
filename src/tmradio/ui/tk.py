@@ -272,6 +272,9 @@ class MainWindow(tk.Tk):
 
         self.toolbar = Toolbar(self, audio=self.audio)
 
+        self.status = tk.Label(self, text='This is a status bar.', bd=1, relief=tk.SUNKEN, anchor=tk.W)
+        self.status.pack(side=tk.BOTTOM, fill=tk.X)
+
         self.entry = ChatEntry(self)
         self.entry.pack(side=tk.BOTTOM, fill=tk.X)
 
@@ -285,11 +288,6 @@ class MainWindow(tk.Tk):
         self.nick_list = NickList(self.panes)
         self.nick_list.pack(expand=tk.YES, fill=tk.BOTH, side=tk.RIGHT, anchor=tk.E, ipady=4)
         self.panes.add(self.nick_list)
-
-        """
-        self.status = tk.Label(self, text='This is a status bar.', bd=1, relief=tk.SUNKEN, anchor=tk.W)
-        self.status.pack(side=tk.BOTTOM, fill=tk.X)
-        """
 
         self.after(100, self.on_idle)
         self.title('TMRadio Client')
