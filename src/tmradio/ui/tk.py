@@ -206,7 +206,7 @@ class ChatEntry(tk.Entry):
     """
     def __init__(self, master, **kwargs):
         """Initializes the control."""
-        tk.Entry.__init__(self, **kwargs)
+        tk.Entry.__init__(self, state='readonly', **kwargs)
         self.bind('<Return>', self.on_enter)
         self.on_message = None
 
@@ -214,6 +214,12 @@ class ChatEntry(tk.Entry):
         if self.on_message:
             self.on_message(self.get())
         self.delete(0, tk.END)
+
+    def enable(self):
+        self.config(state=tk.NORMAL)
+
+    def disable(self):
+        self.config(state='readonly')
 
 
 class MainWindow(tk.Tk):
@@ -295,10 +301,10 @@ class MainWindow(tk.Tk):
         self.nick_list.remove(nickname)
 
     def on_self_joined(self):
-        pass
+        self.entry.enable()
 
     def on_self_parted(self):
-        pass
+        self.entry.disable()
 
     def on_chat_message(self, text, nick):
         self.chat_view.add_message(text, nick)
