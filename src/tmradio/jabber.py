@@ -40,13 +40,7 @@ class Jabber:
         self.bot_jid = None
         self.chat_jid = None
         # Event handlers, should be reset externally.
-        self.on_chat_message = None
-        self.on_disconnected = None
-        self.on_self_joined = None
-        self.on_self_parted = None
-        self.on_track_info = None
-        self.on_user_joined = None
-        self.on_user_parted = None
+        self.event_handlers = {}
         # Outgoing commands, added via post_message().
         self.out_queue = Queue.Queue()
         # Incoming commands, accessible via get_messages().
@@ -71,6 +65,32 @@ class Jabber:
             self.worker = threading.Thread()
             self.worker.run = self._thread_worker
             self.worker.start()
+
+    def set_handler(self, event, handler):
+        """Installs an event handler.
+        
+        Known events:
+        chat-joined    -- somebody joined a chat
+        chat-message   -- a new message arrived
+        chat-offline   -- we're out of the chat room
+        chat-online    -- we're in the chat room
+        chat-parted    -- somebody left
+        disconnected   -- disconnected from the XMPP server
+        track-info     -- track changed
+        """
+        self.event_handlers[event] = handler
+
+    def emit(self, event, *args, **kwargs):
+        try:
+            if event in self.event_handlers:
+                return self.event_handlers[event](*args, **kwargs)
+            if 'default' in self.event_handlers:
+                return self.event_handlers['default'](*args, **kwargs)
+        except Exception, e:
+            tmradio.log.error(u'Error handling event %s: args=%s kwargs=%s message=%s\n%s' % (event, args, kwargs, e, traceback.format_exc(e)))
+            return False
+        tmradio.log.debug(u'Unhandled event %s: args=%s kwargs=%s' % (event, args, kwargs))
+        return False
 
     def get_own_nickname(self):
         return self.chat_my_name
@@ -124,22 +144,22 @@ class Jabber:
             if type(replies) != list:
                 replies = [replies]
             for reply in replies:
-                if 'join' == reply[0] and self.on_user_joined:
-                    self.on_user_joined(reply[1])
-                elif 'part' == reply[0] and self.on_user_parted:
-                    self.on_user_parted(reply[1])
-                elif 'disconnected' == reply[0] and self.on_disconnected:
-                    self.on_disconnected()
-                elif 'chat' == reply[0] and self.on_chat_message:
-                    self.on_chat_message(reply[1], reply[2], reply[3])
-                elif 'joined' == reply[0] and self.on_self_joined:
-                    self.on_self_joined()
-                elif 'parted' == reply[0] and self.on_self_parted:
-                    self.on_self_parted()
-                elif 'offline' == reply[0] and self.on_disconnected:
-                    self.on_disconnected()
-                elif 'track_info' == reply[0] and self.on_track_info:
-                    self.on_track_info(reply[1])
+                if 'join' == reply[0]:
+                    self.emit('chat-joined', nickname=reply[1])
+                elif 'part' == reply[0]:
+                    self.emit('chat-parted', nickname=reply[1])
+                elif 'disconnected' == reply[0]:
+                    self.emit('disconnected')
+                elif 'chat' == reply[0]:
+                    self.emit('chat-message', message=reply[1], nick=reply[2], ts=reply[3])
+                elif 'joined' == reply[0]:
+                    self.emit('chat-online')
+                elif 'parted' == reply[0]:
+                    self.emit('chat-offline')
+                elif 'offline' == reply[0]:
+                    self.emit('disconnected')
+                elif 'track_info' == reply[0]:
+                    self.emit('track-info', reply[1])
                 else:
                     print 'Unhandled jabber message:', str(reply)
 
@@ -385,6 +405,7 @@ class Jabber:
 
     def _process_message(self, text, chat=False, special=False):
         if special:
+            print 'jabber special commad:', text
             if text == 'connect':
                 if not self.cli:
                     self._connect()
@@ -395,9 +416,6 @@ class Jabber:
                     self._connect()
                 if self.cli:
                     self._join_chat_room()
-            elif text == 'quit':
-                self.is_shutting_down = True
-                gtk.main_quit() # FIXME: what if we're not connected?
             else:
                 self._log('^^^ unknown command.')
         elif chat:
@@ -414,7 +432,7 @@ class Jabber:
             self._log('sent to bot: %s' % text)
 
     def _log(self, message):
-        pass # tmradio.log.error('jabber:', message) # FIXME: use a real log, this breaks Windows console (CP-866).
+        tmradio.log.error(u'jabber: %s' % message)
 
     def _on_disconnected(self):
         self._log('disconnected from the server, reconnecting in 5 seconds.')

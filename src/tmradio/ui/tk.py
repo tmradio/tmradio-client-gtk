@@ -6,6 +6,8 @@ TODO:
 - Put images on buttons.
 """
 
+import os
+import sys
 import time
 import webbrowser
 
@@ -167,8 +169,14 @@ class Toolbar(tk.Frame):
         self.btn_sucks = tk.Button(self, image=self.ico_sucks, width=24, height=24, command=self.on_sucks_clicked)
         self.btn_sucks.pack(side=tk.LEFT, padx=2, pady=2)
 
+        self.btn_info = tk.Button(self, image=self.ico_rocks, width=24, height=24, command=self.on_info_clicked)
+        self.btn_info.pack(side=tk.RIGHT, padx=2, pady=2)
+
+        self.btn_edit = tk.Button(self, image=self.ico_sucks, width=24, height=24, command=self.on_edit_clicked)
+        self.btn_edit.pack(side=tk.RIGHT, padx=2, pady=2)
+
         self.name = tk.Label(self, text='Updating, please wait...')
-        self.name.pack(side=tk.LEFT, padx=2, pady=2)
+        self.name.pack(side=tk.LEFT, fill=tk.X, padx=2, pady=2)
 
         self.update_buttons()
         self.pack(side=tk.TOP, fill=tk.X)
@@ -234,6 +242,12 @@ class Toolbar(tk.Frame):
         """Handles clicks on the sucks button."""
         self.jabber.send_sucks(self.track_info.get('id'))
 
+    def on_info_clicked(self):
+        pass
+
+    def on_edit_clicked(self):
+        pass
+
 
 class ChatEntry(tk.Entry):
     """A basic text entry with a callback to process the entered message.
@@ -297,20 +311,27 @@ class MainWindow(tk.Tk):
 
         self.after(100, self.on_idle)
         self.title('TMRadio Client')
-        self.setup_real()
+
+        self.setup()
+
+    def setup(self):
+        if '--local' in sys.argv or os.environ.get('TMCLIENT_LOCAL'):
+            self.setup_test()
+        else:
+            self.setup_real()
 
     def setup_real(self):
         """Connects the UI to the jabber client."""
         self.jabber = tmradio.jabber.Open()
         self.toolbar.jabber = self.jabber
 
-        self.jabber.on_chat_message = self.on_chat_message
-        self.jabber.on_disconnected = self.on_disconnected
-        self.jabber.on_self_joined = self.on_self_joined
-        self.jabber.on_self_parted = self.on_self_parted
-        self.jabber.on_user_joined = self.on_user_joined
-        self.jabber.on_user_parted = self.on_user_parted
-        self.jabber.on_track_info = self.on_track_info
+        self.jabber.set_handler('chat-message', self.on_chat_message)
+        self.jabber.set_handler('disconnected', self.on_disconnected)
+        self.jabber.set_handler('chat-online', self.on_self_joined)
+        self.jabber.set_handler('chat-offline', self.on_self_parted)
+        self.jabber.set_handler('chat-joined', self.on_user_joined)
+        self.jabber.set_handler('chat-parted', self.on_user_parted)
+        self.jabber.set_handler('track-info', self.on_track_info)
 
         self.entry.on_message = self.jabber.send_chat_message
 
@@ -326,6 +347,14 @@ class MainWindow(tk.Tk):
         self.chat_view.add_message(u'кто первый придумал "доброе утро, страна"?', 'hakimovis (1983)')
         self.chat_view.add_message(u'мне кажется цекало', 'dugwin')
         self.chat_view.add_message(u'раскручивал по крайней мере', 'dugwin')
+
+        self.toolbar.set_track_info({
+            'id': 123,
+            'artist': 'Gorky Park',
+            'title': 'Moscow Calling',
+            'count': 74,
+            'length': 192,
+        })
 
     def on_idle(self):
         """Runs backgound tasks, such as polling the Jabber, restarting the
@@ -352,9 +381,9 @@ class MainWindow(tk.Tk):
         """Called when it leaves the chat room."""
         self.entry.disable()
 
-    def on_chat_message(self, text, nick, ts):
+    def on_chat_message(self, **kwargs):
         """Called when a messages is received in the chat room."""
-        self.chat_view.add_message(text, nick, ts)
+        self.chat_view.add_message(kwargs['message'], kwargs['nick'], kwargs['ts'])
 
     def on_disconnected(self):
         """Called when the user is disconnected from the server."""
