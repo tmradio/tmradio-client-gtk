@@ -7,6 +7,8 @@ import sys
 
 import tmradio.config
 
+quiet = False
+
 class Logger(object):
     instance = None
     name = 'default'
@@ -44,18 +46,21 @@ class ChatLogger(Logger):
         return '%(asctime)s - %(message)s'
 
 def debug(text):
-    try: print text.strip()
-    except: pass
+    if not quiet:
+        try: print text.strip()
+        except: pass
     Logger.get().log.debug(text)
 
 def info(text):
-    try: print text.strip()
-    except: pass
+    if not quiet:
+        try: print text.strip()
+        except: pass
     Logger.get().log.info(text)
 
 def error(text):
-    try: print >>sys.stderr, text.strip()
-    except: pass
+    if not quiet:
+        try: print >>sys.stderr, text.strip()
+        except: pass
     Logger.get().log.error(text)
 
 def chat(text):
