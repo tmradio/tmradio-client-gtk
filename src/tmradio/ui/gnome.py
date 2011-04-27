@@ -25,8 +25,6 @@ try:
 except:
     HAVE_NOTIFY = False
 
-USE_THREADING = False
-
 # Global kill switch.
 shutting_down = False
 
@@ -319,39 +317,31 @@ class PodcastView(gtk.TreeView):
 
 
 class MainWindow(BaseWindow):
-    def __init__(self, version):
+    def __init__(self):
         super(MainWindow, self).__init__()
-        self.version = version
         self.config = tmradio.config.Open()
-        self.jabber = tmradio.jabber.Open()
         self.twitter = tmradio.feed.Twitter(self.config)
         self.podcast = tmradio.feed.Podcast(self.config)
         self.is_in_chat = False
         self.is_online = False # the bot is available
         # Track properties.
-        self.track_id = None
-        self.track_artist = None
-        self.track_title = None
-        self.track_labels = None
-        self.track_labels_original = None # for editing
-        self.track_length = None
-        self.track_change_ts = None
-        self.track_vote = 0
-        self.track_link = None
-        self.track_editable = False
+        self.track_info = {}
         # Other windows.
         self.pref_window = None
         # Suppress duplicate nicknames in the chat window.
         self.last_chat_nick = None
         # Initialize the player.
-        self.player = tmradio.audio.Open(on_track_change=self.on_stream_track_change, config=self.config, version=self.version, on_start=self.update_play_button, on_stop=self.update_play_button)
+        self.player = tmradio.audio.Open(on_track_change=self.on_stream_track_change, on_start=self.update_play_button, on_stop=self.update_play_button)
         self.builder.get_object('volume').set_value(self.player.get_volume())
         # RegExp for parsing stream title.
         self.stream_title_re = re.compile('"([^"]+)" by (.+)')
 
+        self.setup_tabs()
+        self.setup_nicklist()
+        self.setup_jabber()
+
         self.window.connect('notify::is-active', self.on_visibility_change)
 
-        self.init_tabs()
         gobject.timeout_add(30, self.on_idle)
 
         settings = gtk.settings_get_default()
@@ -359,19 +349,26 @@ class MainWindow(BaseWindow):
 
         self.twitter.start()
         self.podcast.start()
-        self._jabber_autoconnect()
 
-    def on_visibility_change(self, widget, event):
-        global main_window_visible
-        main_window_visible = widget.props.is_active
+    def setup_jabber(self):
+        """Creates the jabber client and connects the signals."""
+        self.jabber = tmradio.jabber.Open()
+        self.jabber.set_handlers({
+            'chat-joined': self.on_user_joined,
+            'chat-message': self.on_chat_message,
+            'chat-offline': self.on_self_parted,
+            'chat-online': self.on_self_joined,
+            'chat-parted': self.on_user_parted,
+            'disconnected': self.on_disconnected,
+            'track-info': self.set_track_info,
+        })
 
-    def init_tabs(self):
+    def setup_tabs(self):
         self.chat_tab = MessageView(self.builder.get_object('chatscroll'), collapse_nicknames=True, jid=self.config.get_jabber_id(), nick=self.config.get_jabber_chat_nick())
         self.twit_tab = MessageView(self.builder.get_object('twitscroll'))
         self.cast_tab = PodcastView(self.builder.get_object('podscroll'))
-        self.init_nicklist()
 
-    def init_nicklist(self):
+    def setup_nicklist(self):
         tv = self.builder.get_object('userlist')
         tm = tv.get_model()
 
@@ -385,19 +382,48 @@ class MainWindow(BaseWindow):
         tm.set_sort_func(0, lambda model, iter1, iter2: cmp(model.get_value(iter1, 0).lower(), model.get_value(iter2, 0).lower()))
         tm.set_sort_column_id(0, gtk.SORT_ASCENDING)
 
-    def _jabber_autoconnect(self):
-        """Connects to the jabber server if parameters are OK."""
-        if self.config.get_jabber_id() and self.config.get_jabber_password():
-            self.jabber.post_message('connect', special=True)
-        else:
-            self.on_menu_preferences_activate()
+    def on_chat_message(self, message, nick, ts):
+        """Handles incoming chat messages."""
+        self.add_chat(message, nick, ts)
+
+    def on_self_joined(self):
+        """Is called by the jabber client when the app user joins the chat."""
+        self.is_in_chat = True
+        self.is_online = True
+        self.update_controls()
+
+    def on_self_parted(self):
+        """Is called by the jabber client when the app user leaves the chat."""
+        self.is_in_chat = False
+        self.chat_tab.clear()
+        self.update_controls()
+
+    def on_disconnected(self):
+        """Is called when we're disconnected from the jabber server."""
+        self.track_info['vote'] = 0
+
+    def on_user_joined(self, nickname):
+        """Is called when somebody joins the chat."""
+        self.is_online = True
+        self._add_chat_user(nickname, True)
+
+    def on_user_parted(self, nickname):
+        """Is called when somebody leaves the chat."""
+        self.is_online = True
+        self._add_chat_user(nickname, False)
+
+    def on_visibility_change(self, widget, event):
+        """Handles the notify::is-active event which tells us whether the main
+        window has focus."""
+        global main_window_visible
+        main_window_visible = widget.props.is_active
 
     def on_delete(self, *args):
         """Handle the main window's close button."""
         self.on_menu_quit_activate(None)
 
     def on_MainWindow_destroy(self, widget, data=None):
-        self.jabber.post_message('quit', special=True)
+        self.jabber.shutdown()
         # gtk.main_quit()
 
     def on_play_clicked(self, widget, data=None):
@@ -415,26 +441,43 @@ class MainWindow(BaseWindow):
         self.player.play(self.config.get_stream_uri(), volume=volume or 0.5)
         self.update_play_button()
 
-    def set_track_info(self, artist, title, track_id, count, weight, tags, full_update):
-        self.builder.get_object('track_artist').set_text(artist)
-        self.builder.get_object('track_title').set_text(title)
-        self.builder.get_object('track_labels').set_text(u' '.join(tags or []))
-        if full_update:
-            message = u'"%s" by %s' % (title, artist)
-            if self.track_vote > 0:
+    def set_track_info(self, ti):
+        old = self.track_info
+        self.track_info.update(ti)
+        self.builder.get_object('track_artist').set_text(self.track_info.get('artist'))
+        self.builder.get_object('track_title').set_text(self.track_info.get('title'))
+        self.builder.get_object('track_labels').set_text(u' '.join(self.track_info.get('labels', [])))
+        if self.track_info.get('listeners') != old.get('listeners'):
+            global notification_title
+            notification_title = title = 'tmradio.net (%u)' % self.track_info.get('listeners')
+            self.window.set_title(title)
+            self.builder.get_object('tray').set_tooltip(title)
+        if self.track_info.get('id') != old.get('id'):
+            self.track_info['last_played'] = int(time.time())
+
+            text = u'%s — %s' % (self.track_info.get('artist'), self.track_info.get('title'))
+            length = self.track_info.get('length')
+            if length:
+                text += u' [%u:%02u]' % (length / 60, length % 60)
+                text += u' ⚖%s' % self.track_info.get('weight', 0)
+            self.builder.get_object('progress').set_text(text)
+
+            message = u'«%s» by %s' % (self.track_info.get('title'), self.track_info.get('artist'))
+            vote = self.track_info.get('vote', 0)
+            if vote > 0:
                 message += u'. You LOVE it.'
-            elif self.track_vote < 0:
+            elif vote < 0:
                 message += u'. You HATE it.'
             notify(message)
+        self.update_controls()
+        self.twitter.update()
+        self.podcast.update()
 
     def on_stream_track_change(self, title):
         tmradio.log.debug('Stream title changed.')
         m = self.stream_title_re.search(title)
         if m:
             tmradio.log.debug('%s' % m.groups())
-
-    def set_track_id(self, track_id):
-        self.track_id = track_id
 
     def clear_chat(self):
         self.chat_tab.clear()
@@ -448,19 +491,18 @@ class MainWindow(BaseWindow):
 
     def on_idle(self):
         """Update controls, process xmpp messages.""" 
-        self._process_jabber_replies()
+        self.jabber.on_idle()
         self._update_progress_bar()
-        if not USE_THREADING:
-            self.jabber.process_queue()
         self.player.on_idle()
         self._update_twitter()
         self._update_podcast()
         return True
 
     def _update_progress_bar(self):
-        if self.track_change_ts and self.track_length:
-            spent = float(min(int(time.time()) - self.track_change_ts, self.track_length))
-            fraction = spent / float(self.track_length)
+        length = self.track_info.get('length')
+        if self.track_info.get('last_played') and length:
+            spent = float(min(int(time.time()) - self.track_info.get('last_played'), length))
+            fraction = spent / float(length)
         else:
             fraction = 0
         pb = self.builder.get_object('progress')
@@ -482,8 +524,9 @@ class MainWindow(BaseWindow):
 
         self.update_play_button()
 
+        editable = self.track_info.get('editable', False)
         for ctl_name in ('skip', 'track_artist', 'track_title', 'track_labels', 'update'):
-            self.builder.get_object(ctl_name).set_sensitive(self.track_editable and connected and self.is_online)
+            self.builder.get_object(ctl_name).set_sensitive(editable and connected and self.is_online)
 
     def update_play_button(self):
         ctl = self.builder.get_object('play')
@@ -492,53 +535,6 @@ class MainWindow(BaseWindow):
 
         ctl = self.builder.get_object('volume')
         ctl.set_value(self.player.get_volume())
-
-    def _process_jabber_replies(self):
-        """Process the incoming jabber message queue."""
-        update_track_info = False
-        update_controls = False
-        full_update = False
-        for replies in self.jabber.fetch_replies():
-            if type(replies) != list:
-                replies = [replies]
-            for reply in replies:
-                update_controls = True
-                if reply[0] == 'set':
-                    self.is_online = True
-                    if self._process_jabber_property(reply):
-                        full_update = True
-                    update_track_info = True
-                elif reply[0] == 'offline':
-                    self.is_online = False
-                elif reply[0] == 'chat':
-                    self.is_online = True
-                    offline = len(reply) > 3 and reply[3]
-                    timestamp = offline and reply[3] or time.time()
-                    self.add_chat(reply[1], reply[2], timestamp, offline)
-                elif reply[0] == 'joined':
-                    self.is_online = True
-                    self.is_in_chat = True
-                elif reply[0] == 'left':
-                    self.is_in_chat = False
-                    self.chat_tab.clear()
-                elif reply[0] == 'disconnected':
-                    self.track_vote = 0
-                elif reply[0] == 'join':
-                    self.is_online = True
-                    self._add_chat_user(reply[1], True)
-                elif reply[0] == 'part':
-                    self.is_online = True
-                    self._add_chat_user(reply[1], False)
-                elif reply[0] == 'auth-error':
-                    self.on_menu_preferences_activate()
-                else:
-                    tmradio.log.info(u'Unhandled jabber reply: %s' % reply)
-        if update_track_info:
-            self.set_track_info(self.track_artist, self.track_title, self.track_id, 0, 0, self.track_labels, full_update)
-            self.twitter.update()
-            self.podcast.update()
-        if update_controls:
-            self.update_controls()
 
     def _update_twitter(self):
         items = self.twitter.get_records()
@@ -565,54 +561,6 @@ class MainWindow(BaseWindow):
                             audio_size = 'length' in enc and int(enc['length']) or 1024
                     self.cast_tab.add(item['updated_parsed'], item['title'], item['link'], audio_link, audio_size)
 
-    def _process_jabber_property(self, reply):
-        key, value = reply[1:]
-        if key == 'track_id':
-            new_id = int(value)
-            if new_id != self.track_id:
-                # We use track chage time to display the progress bar, so it
-                # needs to be precise.  If it's the first track info we get, it
-                # most likely is mid-play, we're not interested.
-                if self.track_id is not None:
-                    self.track_change_ts = int(time.time())
-                self.track_id = new_id
-                self.track_vote = 0
-        elif key == 'track_artist':
-            self.track_artist = value
-        elif key == 'track_title':
-            self.track_title = value
-        elif key == 'track_labels':
-            self.track_labels = value
-            self.track_labels_original = value
-        elif key == 'track_length':
-            self.track_length = int(value)
-        elif key == 'track_started_on':
-            if not self.track_change_ts and str(value).isdigit():
-                self.track_change_ts = int(value)
-        elif key == 'track_vote':
-            self.track_vote = value and int(value) or 0
-            return True
-        elif key == 'track_editable':
-            self.track_editable = value
-        elif key == 'track_listeners':
-            global notification_title
-            notification_title = title = 'tmradio.net (%u)' % value
-            self.window.set_title(title)
-            self.builder.get_object('tray').set_tooltip(title)
-        elif key == 'track_weight':
-            self.track_weight = value
-        elif key == 'track_playcount':
-            pass
-        else:
-            tmradio.log.debug(u'Unhandled property: ' + str(reply))
-
-        if key in ('track_title', 'track_artist', 'track_length', 'track_weight'):
-            text = u'%s — %s' % (self.track_artist, self.track_title)
-            if self.track_length:
-                text += u' [%u:%02u]' % (self.track_length / 60, self.track_length % 60)
-                text += u' ⚖%s' % self.track_weight
-            self.builder.get_object('progress').set_text(text)
-
     def _add_chat_user(self, name, joined=True):
         model = self.builder.get_object('nicklist')
         for iter in model:
@@ -634,12 +582,11 @@ class MainWindow(BaseWindow):
         TriggerButton widget reports a toggle event even when the state is
         changed programmatically, tricks are used to detect the real
         situation)."""
-        if button.get_active() and self.track_id and self.is_online:
-            if self.track_vote != vote:
-                self.track_vote = vote
-                cmd = vote > 0 and 'rocks' or 'sucks'
-                self.jabber.post_message('%s %u' % (cmd, self.track_id))
-                self.jabber.post_message('dump %u' % self.track_id)
+        if button.get_active() and self.track_info.get('id') and self.is_online:
+            if self.track_info.get('vote') != vote:
+                self.track_info['vote'] = vote
+                cmd = vote > 0 and self.jabber.send_rocks or self.jabber.send_sucks
+                cmd(self.track_info.get('id'))
         self.update_buttons()
 
     def update_buttons(self):
@@ -650,12 +597,13 @@ class MainWindow(BaseWindow):
         rocks = self.builder.get_object('rocks')
         sucks = self.builder.get_object('sucks')
 
-        if self.is_online and self.track_id:
-            rocks.set_active(self.track_vote > 0)
-            sucks.set_active(self.track_vote < 0)
+        if self.is_online and self.track_info.get('id'):
+            vote = self.track_info.get('vote')
+            rocks.set_active(vote > 0)
+            sucks.set_active(vote < 0)
 
-            rocks.set_sensitive(self.track_vote <= 0)
-            sucks.set_sensitive(self.track_vote >= 0)
+            rocks.set_sensitive(vote <= 0)
+            sucks.set_sensitive(vote >= 0)
         else:
             rocks.set_active(False)
             rocks.set_sensitive(False)
@@ -666,6 +614,7 @@ class MainWindow(BaseWindow):
 
     def on_chatmsg_activate(self, field):
         self.jabber.send_chat_message(field.get_text())
+        self.builder.get_object('chatmsg').set_text('')
 
     def on_update_clicked(self, button):
         if not self.jabber:
@@ -682,20 +631,20 @@ class MainWindow(BaseWindow):
                     value.append(u'-' + l)
                 value = u' '.join(value)
             if value:
-                self.jabber.post_message(fmap[key] % (value, self.track_id))
-        self.jabber.post_message('show ' + str(self.track_id))
+                self.jabber.post_message(fmap[key] % (value, self.track_info.get('id')))
+        self.jabber.request_track_info(self.track_info.get('id'))
 
     def on_chatbtn_clicked(self, *args):
         if self.is_in_chat:
-            self.jabber.post_message('leave', special=True)
+            self.jabber.leave_chat()
         else:
-            self.jabber.post_message('join', special=True)
+            self.jabber.join_chat()
 
     def on_skip_clicked(self, button):
-        self.jabber.post_message('skip')
+        self.jabber.skip_track(self.track_info.get('id'))
 
     def on_info_clicked(self, *args):
-        webbrowser.open('http://www.last.fm/music/%s' % urllib.quote(self.track_artist.encode('utf-8')))
+        webbrowser.open('http://www.last.fm/music/%s' % urllib.quote(self.track_info.get('artist').encode('utf-8')))
 
     def on_volume_changed(self, widget, level):
         self.player.set_volume(level)
@@ -782,11 +731,11 @@ class Preferences(BaseWindow):
             if ctl:
                 getattr(self.config, fn)(ctl.get_text())
         self.config.save()
-        self.main.jabber.post_message('connect', special=True)
+        self.main.jabber.connect()
 
-def Run(version):
+def Run():
     gobject.threads_init()
-    app = MainWindow(version)
+    app = MainWindow()
     app.window.show()
     if app.pref_window:
         app.pref_window.window.present()

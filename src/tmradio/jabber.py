@@ -80,12 +80,18 @@ class Jabber:
         """
         self.event_handlers[event] = handler
 
+    def set_handlers(self, items):
+        """Sets multiple event handlers at once."""
+        for k, v in items.items():
+            self.set_handler(k, v)
+
     def emit(self, event, *args, **kwargs):
+        """Reports an event to the UI."""
         try:
             if event in self.event_handlers:
                 return self.event_handlers[event](*args, **kwargs)
             if 'default' in self.event_handlers:
-                return self.event_handlers['default'](*args, **kwargs)
+                return self.event_handlers['default'](event, *args, **kwargs)
         except Exception, e:
             tmradio.log.error(u'Error handling event %s: args=%s kwargs=%s message=%s\n%s' % (event, args, kwargs, e, traceback.format_exc(e)))
             return False
@@ -134,6 +140,21 @@ class Jabber:
     def skip_track(self, track_id):
         self.send_chat_message('/skip %u' % track_id)
         self.send_chat_message('/dump %u' % track_id)
+
+    def join_chat(self):
+        self.post_message('join', special=True)
+
+    def leave_chat(self):
+        self.post_message('leave', special=True)
+
+    def request_track_info(self, track_id, marker=None):
+        """Requests track info from the bot.
+
+        Use the `marker' argument, included in the reply, to distinguish
+        between different purpose commands.  E.g., you can request a specific
+        track info to show up the properties dialog.
+        """
+        self.post_message('dump %u %s' % (track_id, marker or ''))
 
     def on_idle(self):
         """Delivers messages to the GUI using callbacks."""
